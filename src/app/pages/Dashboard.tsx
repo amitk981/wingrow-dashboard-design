@@ -239,10 +239,10 @@ function TeamActivity({
       {/* Pipeline stage header */}
       <div className="grid grid-cols-4 border-b border-gray-50 bg-gray-50/60">
         {[
-          { label: 'Ready',      sub: 'for Finalization' },
-          { label: 'Location',   sub: 'Finalized' },
-          { label: 'Awaiting',   sub: 'your approval' },
-          { label: 'Market',     sub: 'onboarded' },
+          { label: 'Proposals',  sub: 'Assigned' },
+          { label: 'Trips',      sub: 'Undertaken' },
+          { label: 'Location',   sub: 'Finalised' },
+          { label: 'Market',     sub: 'Onboarded' },
         ].map((col, i) => (
           <div key={i} className={`px-3 py-2 text-center ${i < 3 ? 'border-r border-gray-100' : ''}`}>
             <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">{col.label}</p>
