@@ -435,6 +435,15 @@ export function Dashboard() {
           </div>
         </div>
 
+        {/* Team Overview — clickable rows set the member filter */}
+        {currentUser.subordinates.length > 0 && (
+          <TeamActivity
+            subordinateIds={currentUser.subordinates}
+            selectedUserId={filters.userId}
+            onSelectMember={handleSelectMember}
+          />
+        )}
+
         {/* Filters */}
         <FilterBar />
 
@@ -542,14 +551,7 @@ export function Dashboard() {
           />
         )}
 
-        {/* Team Overview — clickable rows set the member filter */}
-        {currentUser.subordinates.length > 0 && (
-          <TeamActivity
-            subordinateIds={currentUser.subordinates}
-            selectedUserId={filters.userId}
-            onSelectMember={handleSelectMember}
-          />
-        )}
+
 
         <div className="text-center text-gray-300 text-[10px] py-2 border-t border-gray-100">
           © 2026 Vealogo Market Operations
