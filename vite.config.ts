@@ -17,6 +17,7 @@ function figmaAssetResolver() {
 }
 
 export default defineConfig({
+  base: process.env.BASE_URL || '/',
   plugins: [
     figmaAssetResolver(),
     react(),
