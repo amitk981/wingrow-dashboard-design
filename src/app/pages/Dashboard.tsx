@@ -90,7 +90,7 @@ function ApprovalRow({ ap }: { ap: Approval }) {
 
   return (
     <div className={`flex items-center gap-2 rounded-xl border bg-white ${
-      overdue ? 'border-l-[3px] border-l-orange-400 border-t-gray-100 border-r-gray-100 border-b-gray-100' : 'border-gray-100'
+      overdue ? 'border-orange-400 border-[0.5px]' : 'border-gray-100'
     }`}>
       <div className="flex items-center gap-2.5 flex-1 min-w-0 px-3 py-2.5">
         <Avatar id={ap.requestedBy} />
@@ -415,7 +415,7 @@ export function Dashboard() {
         </div>
       </div>
 
-      <div className="p-3 sm:p-5 space-y-3 sm:space-y-4">
+      <div className="p-3 sm:p-5 space-y-3 sm:space-y-4 max-w-5xl mx-auto w-full">
 
         {/* Hero */}
         <div className="bg-gradient-to-br from-[#0f172a] via-[#1a1040] to-[#0d2a4a] rounded-2xl overflow-hidden relative">
@@ -458,32 +458,14 @@ export function Dashboard() {
                 <p className="text-sm font-semibold text-violet-800">{selectedUser.name}</p>
                 <span className="text-[10px] text-violet-500 bg-violet-100 px-2 py-0.5 rounded-full">{selectedUser.role}</span>
               </div>
-              <p className="text-[11px] text-violet-500 mt-0.5">
-                Showing this member's pipeline performance
-                {filters.datePreset !== 'all' && ` · ${filters.datePreset === 'today' ? 'Today' : filters.datePreset === 'yesterday' ? 'Yesterday' : filters.datePreset === 'last5' ? 'Last 5 days' : filters.datePreset === 'last30' ? 'Last 30 days' : '3 months'}`}
-              </p>
             </div>
-            <div className="flex items-center gap-3 flex-shrink-0">
-              <div className="text-center">
-                <p className="text-base font-bold text-violet-700">{proposalKPIs.total}</p>
-                <p className="text-[9px] text-violet-400 uppercase">Total</p>
-              </div>
-              <div className="text-center">
-                <p className="text-base font-bold text-amber-500">{proposalKPIs.inReview + tripKPIs.inReview + finalKPIs.inReview}</p>
-                <p className="text-[9px] text-violet-400 uppercase">In Review</p>
-              </div>
-              <div className="text-center">
-                <p className="text-base font-bold text-green-500">{proposalKPIs.approved}</p>
-                <p className="text-[9px] text-violet-400 uppercase">Approved</p>
-              </div>
-              <button
-                onClick={() => setFilters({ ...filters, userId: 'All' })}
-                className="w-7 h-7 flex items-center justify-center rounded-lg border border-violet-200 text-violet-400 hover:text-violet-700 hover:bg-violet-100 transition-colors ml-1"
-                title="Clear member filter"
-              >
-                <X size={12} />
-              </button>
-            </div>
+            <button
+              onClick={() => setFilters({ ...filters, userId: 'All' })}
+              className="w-7 h-7 flex items-center justify-center rounded-lg border border-violet-200 text-violet-400 hover:text-violet-700 hover:bg-violet-100 transition-colors"
+              title="Clear member filter"
+            >
+              <X size={12} />
+            </button>
           </div>
         )}
 
