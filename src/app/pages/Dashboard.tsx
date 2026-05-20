@@ -474,7 +474,6 @@ export function Dashboard() {
               { icon: Layers,      iconBg: 'bg-blue-50',   iconColor: 'text-blue-500',   label: 'Total',        value: proposalKPIs.total },
               { icon: Clock,       iconBg: 'bg-amber-50',  iconColor: 'text-amber-500',  label: 'In Review',    value: proposalKPIs.inReview },
               { icon: CheckCircle, iconBg: 'bg-green-50',  iconColor: 'text-green-500',  label: 'Approved',     value: proposalKPIs.approved },
-              { icon: ShoppingBag, iconBg: 'bg-violet-50', iconColor: 'text-violet-500', label: 'Exp. Stalls',  value: proposalKPIs.stalls },
             ]}
           />
         )}
