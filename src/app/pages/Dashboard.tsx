@@ -48,16 +48,16 @@ function KPICard({
   return (
     <div
       onClick={onClick}
-      className={`bg-white rounded-2xl p-3.5 border border-gray-100 flex flex-col gap-2.5 shadow-sm transition-all ${
-        onClick ? 'cursor-pointer hover:shadow-md hover:-translate-y-0.5 active:scale-95' : ''
+      className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl ${iconBg} border border-gray-100/60 transition-all ${
+        onClick ? 'cursor-pointer hover:shadow-md hover:-translate-y-0.5 active:scale-[0.97]' : ''
       }`}
     >
-      <div className={`w-8 h-8 ${iconBg} rounded-xl flex items-center justify-center`}>
-        <Icon size={15} className={iconColor} />
+      <div className={`w-7 h-7 bg-white/70 rounded-lg flex items-center justify-center flex-shrink-0`}>
+        <Icon size={14} className={iconColor} />
       </div>
-      <div>
-        <p className="text-[9px] text-gray-400 uppercase tracking-wider mb-0.5 leading-tight">{label}</p>
-        <p className="text-xl font-bold text-gray-900">{value}</p>
+      <div className="min-w-0">
+        <p className="text-lg font-bold text-gray-900 leading-none">{value}</p>
+        <p className="text-[9px] text-gray-500 uppercase tracking-wider mt-0.5">{label}</p>
       </div>
     </div>
   );
@@ -111,17 +111,16 @@ function ApprovalRow({ ap }: { ap: Approval }) {
       </div>
       <div className="flex items-center gap-1.5 pr-3 flex-shrink-0">
         <button
-          onClick={() => setResolved('rejected')}
-          className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:border-red-300 hover:text-red-500 hover:bg-red-50 transition-colors"
-          title="Reject"
+          onClick={() => setResolved('approved')}
+          className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wide px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-600 hover:bg-blue-100 hover:border-blue-300 transition-colors"
         >
-          <X size={12} />
+          Approve
         </button>
         <button
-          onClick={() => setResolved('approved')}
-          className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-green-500 hover:bg-green-600 text-white transition-colors"
+          onClick={() => setResolved('rejected')}
+          className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wide px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-red-50 border border-red-200 text-red-500 hover:bg-red-100 hover:border-red-300 transition-colors"
         >
-          <Check size={11} /> Approve
+          Reject
         </button>
       </div>
     </div>
@@ -288,10 +287,7 @@ function TeamActivity({
                   <p className={`text-lg font-bold ${ts.active > 0 ? 'text-blue-600' : 'text-gray-300'}`}>
                     {ts.active}
                   </p>
-                  <p className="text-[9px] text-gray-400">active</p>
-                  {ts.closed > 0 && (
-                    <p className="text-[9px] text-emerald-500 mt-0.5">{ts.closed} closed</p>
-                  )}
+                  <p className="text-[9px] text-gray-400">total</p>
                 </div>
 
                 {/* Trips column */}
@@ -300,9 +296,6 @@ function TeamActivity({
                     {ts.tripsTotal}
                   </p>
                   <p className="text-[9px] text-gray-400">total</p>
-                  {ts.tripsApproved > 0 && (
-                    <p className="text-[9px] text-green-500 mt-0.5">{ts.tripsApproved} approved</p>
-                  )}
                 </div>
 
                 {/* Location finalized */}
@@ -310,7 +303,7 @@ function TeamActivity({
                   <p className={`text-lg font-bold ${ts.tripsReady > 0 ? 'text-emerald-600' : 'text-gray-300'}`}>
                     {ts.tripsReady}
                   </p>
-                  <p className="text-[9px] text-gray-400">ready</p>
+                  <p className="text-[9px] text-gray-400">total</p>
                   {ts.tripsReady > 0 && (
                     <p className="text-[9px] text-emerald-400 mt-0.5">needs action</p>
                   )}
@@ -321,7 +314,7 @@ function TeamActivity({
                   <p className={`text-lg font-bold ${ts.awaitingApproval > 0 ? 'text-amber-500' : 'text-gray-300'}`}>
                     {ts.awaitingApproval}
                   </p>
-                  <p className="text-[9px] text-gray-400">items</p>
+                  <p className="text-[9px] text-gray-400">total</p>
                 </div>
               </div>
             </button>
