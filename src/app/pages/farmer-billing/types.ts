@@ -1,4 +1,4 @@
-export { PRIMARY } from "./tokens";
+export const PRIMARY = "#E83166";
 
 // ─── Screen Navigation ────────────────────────────────────────────────────────
 export type Screen =

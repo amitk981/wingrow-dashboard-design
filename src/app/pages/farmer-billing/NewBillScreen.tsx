@@ -1,22 +1,11 @@
 import { useState } from "react";
-import { ArrowLeft, Scale, Hash, Plus, ShoppingCart, Trash2, Camera, ChevronRight, Zap, MapPin, RefreshCw, AlertTriangle } from "lucide-react";
-import { BillingCtx, CartItem, formatRupee, pricingLabel, cartTotal } from "./types";
 import {
-  PRIMARY, PRIMARY_TINT,
-  SECONDARY, SECONDARY_TINT,
-  SUCCESS, SUCCESS_TINT, SUCCESS_STRONG,
-  WARNING, WARNING_TINT,
-  INFO, INFO_TINT,
-  DANGER_TINT, DANGER,
-  SURFACE_MUTED, BORDER,
-  CARD_SHADOW, ACCENT_SHADOW,
-  TEXT,
-} from "./tokens";
+  ArrowLeft, Plus, Camera, Trash2, Scale, Hash,
+  ShoppingCart, MapPin, ChevronRight, AlertTriangle, RefreshCw
+} from "lucide-react";
+import { BillingCtx, PRIMARY, formatRupee, cartTotal, pricingLabel } from "./types";
 
 interface Props { ctx: BillingCtx }
-
-const CELL_BG     = SURFACE_MUTED;
-const CELL_BORDER = BORDER;
 
 export function NewBillScreen({ ctx }: Props) {
   const [showAddOptions, setShowAddOptions] = useState(false);
@@ -41,7 +30,7 @@ export function NewBillScreen({ ctx }: Props) {
         <button
           onClick={() => ctx.goTo("home")}
           className="flex items-center justify-center rounded-xl"
-          style={{ width: 38, height: 38, background: PRIMARY_TINT }}
+          style={{ width: 38, height: 38, background: "#FDE8EF" }}
         >
           <ArrowLeft size={18} color={PRIMARY} />
         </button>
@@ -63,30 +52,25 @@ export function NewBillScreen({ ctx }: Props) {
 
       {/* Active Market Context — with Change affordance */}
       <div
-        className="bg-white rounded-xl px-4 py-3 flex items-center gap-2.5"
-        style={{ boxShadow: CARD_SHADOW, border: `1px solid ${CELL_BORDER}` }}
+        className="rounded-xl px-3 py-2.5 flex items-center gap-2.5"
+        style={{ background: "#FDE8EF" }}
       >
-        <div
-          className="flex items-center justify-center rounded-xl shrink-0"
-          style={{ width: 36, height: 36, background: PRIMARY_TINT }}
-        >
-          <MapPin size={15} color={PRIMARY} />
-        </div>
+        <MapPin size={15} color={PRIMARY} />
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-bold leading-tight truncate text-gray-900">{market.name}</p>
-          <p className="text-xs text-gray-400">Stall {market.stallNo} · {market.timing}</p>
+          <p className="text-xs font-bold leading-tight truncate" style={{ color: PRIMARY }}>{market.name}</p>
+          <p className="text-xs text-gray-500">Stall {market.stallNo} · {market.timing}</p>
         </div>
         <span
-          className="text-xs font-bold px-2 py-0.5 rounded-full shrink-0"
-          style={{ background: SUCCESS_TINT, color: SUCCESS_STRONG, fontSize: 9 }}
+          className="text-xs font-bold px-2 py-0.5 rounded-full text-white shrink-0"
+          style={{ background: "#10B981", fontSize: 9 }}
         >
-          OPEN
+          ACTIVE
         </span>
-        <div className="w-px h-6 bg-gray-200 shrink-0" />
+        <div className="w-px h-7 bg-pink-200 shrink-0" />
         <button
           onClick={() => ctx.goTo("market-select")}
           className="flex items-center gap-1 shrink-0 text-xs font-semibold py-1 px-2 rounded-lg"
-          style={{ background: CELL_BG, color: "#6B7280" }}
+          style={{ background: "rgba(232,49,102,0.12)", color: PRIMARY }}
         >
           <RefreshCw size={11} />
           Change
@@ -97,8 +81,8 @@ export function NewBillScreen({ ctx }: Props) {
       <div className="grid grid-cols-2 gap-3">
         <button
           onClick={handleAddManual}
-          className="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 border-2"
-          style={{ borderColor: PRIMARY, boxShadow: CARD_SHADOW }}
+          className="rounded-2xl p-4 flex flex-col items-center gap-2 border-2"
+          style={{ borderColor: PRIMARY, background: "#FDE8EF" }}
         >
           <div
             className="flex items-center justify-center rounded-xl"
@@ -114,12 +98,12 @@ export function NewBillScreen({ ctx }: Props) {
 
         <button
           onClick={handleAddImage}
-          className="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 border-2"
-          style={{ borderColor: CELL_BORDER, boxShadow: CARD_SHADOW }}
+          className="rounded-2xl p-4 flex flex-col items-center gap-2 border-2"
+          style={{ borderColor: PRIMARY, background: "white" }}
         >
           <div
             className="flex items-center justify-center rounded-xl"
-            style={{ width: 44, height: 44, background: CELL_BG }}
+            style={{ width: 44, height: 44, background: "#FDE8EF" }}
           >
             <Camera size={22} color={PRIMARY} />
           </div>
@@ -134,38 +118,40 @@ export function NewBillScreen({ ctx }: Props) {
       {ctx.cart.length === 0 ? (
         <div
           className="rounded-2xl p-8 text-center bg-white"
-          style={{ boxShadow: CARD_SHADOW }}
+          style={{ boxShadow: "0 1px 6px rgba(0,0,0,0.07)" }}
         >
           <div
             className="flex items-center justify-center rounded-full mx-auto mb-3"
-            style={{ width: 56, height: 56, background: CELL_BG }}
+            style={{ width: 56, height: 56, background: "#F9FAFB" }}
           >
-            <ShoppingCart size={24} color={BORDER} />
+            <ShoppingCart size={24} color="#D1D5DB" />
           </div>
           <p className="text-gray-400 text-sm mb-1">Your cart is empty</p>
           <p className="text-gray-300 text-xs">Add products using the options above</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col gap-2">
           <p className="text-xs font-semibold tracking-widest text-gray-400 uppercase" style={{ fontSize: 10 }}>
             CART ITEMS ({ctx.cart.length})
           </p>
           {ctx.cart.map((item) => (
             <div
               key={item.cartId}
-              className="bg-white rounded-2xl p-4 flex items-center gap-3"
-              style={{ boxShadow: CARD_SHADOW, border: `1px solid ${CELL_BORDER}` }}
+              className="bg-white rounded-2xl p-3.5 flex items-center gap-3"
+              style={{ boxShadow: "0 1px 6px rgba(0,0,0,0.07)" }}
             >
               <div
                 className="flex items-center justify-center rounded-xl shrink-0 text-lg"
-                style={{ width: 42, height: 42, background: CELL_BG }}
+                style={{ width: 40, height: 40, background: "#FDE8EF" }}
               >
                 {item.sku.emoji}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-0.5">
                   <p className="text-sm font-bold text-gray-900 truncate">{item.sku.name}</p>
-                  {item.manualCorrection && <AlertTriangle size={12} color={WARNING} />}
+                  {item.manualCorrection && (
+                    <AlertTriangle size={12} color="#F59E0B" />
+                  )}
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-gray-400">
                   {item.sku.billingType === "weight" ? (
@@ -182,9 +168,9 @@ export function NewBillScreen({ ctx }: Props) {
                 <button
                   onClick={() => ctx.removeFromCart(item.cartId)}
                   className="mt-1 p-1 rounded-lg"
-                  style={{ background: DANGER_TINT }}
+                  style={{ background: "#FEE2E2" }}
                 >
-                  <Trash2 size={13} color={DANGER} />
+                  <Trash2 size={13} color="#EF4444" />
                 </button>
               </div>
             </div>
@@ -205,7 +191,7 @@ export function NewBillScreen({ ctx }: Props) {
           <button
             onClick={() => ctx.goTo("cart-review")}
             className="flex items-center gap-2 px-5 py-3.5 rounded-2xl text-white font-bold"
-            style={{ background: PRIMARY, boxShadow: ACCENT_SHADOW }}
+            style={{ background: PRIMARY }}
           >
             Review Cart
             <ChevronRight size={16} />

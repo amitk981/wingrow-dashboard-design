@@ -1,18 +1,9 @@
-import { BillingCtx, CartItem, SKUS, formatRupee } from "./types";
 import { useState, useRef } from "react";
 import {
   ArrowLeft, Camera, CheckCircle2, X, Scale, Hash,
   Zap, AlertTriangle, Plus, ShoppingCart
 } from "lucide-react";
-import {
-  PRIMARY, PRIMARY_TINT,
-  SUCCESS, SUCCESS_STRONG, SUCCESS_TINT, SUCCESS_BORDER,
-  WARNING, WARNING_STRONG, WARNING_TINT,
-  DANGER, DANGER_TINT,
-  INFO, INFO_TINT,
-  SURFACE_MUTED, BORDER,
-  CARD_SHADOW, ACCENT_SHADOW,
-} from "./tokens";
+import { BillingCtx, CartItem, PRIMARY, pricingLabel, formatRupee, SKUS } from "./types";
 
 type DetectionState = "idle" | "uploading" | "processing" | "done";
 
@@ -51,9 +42,6 @@ const DETECTED_MOCK: DetectedItem[] = [
 ];
 
 interface Props { ctx: BillingCtx }
-
-const CELL_BG    = SURFACE_MUTED;
-const CELL_BORDER = BORDER;
 
 export function ImageAddScreen({ ctx }: Props) {
   const [state, setState] = useState<DetectionState>("idle");
@@ -199,7 +187,7 @@ export function ImageAddScreen({ ctx }: Props) {
         <button
           onClick={() => ctx.goTo("new-bill")}
           className="flex items-center justify-center rounded-xl"
-          style={{ width: 38, height: 38, background: PRIMARY_TINT }}
+          style={{ width: 38, height: 38, background: "#FDE8EF" }}
         >
           <ArrowLeft size={18} color={PRIMARY} />
         </button>
@@ -222,11 +210,11 @@ export function ImageAddScreen({ ctx }: Props) {
         <button
           onClick={handleUploadClick}
           className="rounded-2xl flex flex-col items-center justify-center gap-3 py-10 border-2 border-dashed transition-all"
-          style={{ borderColor: imageCount > 0 ? PRIMARY : CELL_BORDER, background: imageCount > 0 ? PRIMARY_TINT : "#FFF5F8" }}
+          style={{ borderColor: imageCount > 0 ? PRIMARY : "#D1D5DB", background: imageCount > 0 ? "#FDE8EF" : "#F9FAFB" }}
         >
           <div
             className="flex items-center justify-center rounded-2xl"
-            style={{ width: 56, height: 56, background: imageCount > 0 ? PRIMARY : CELL_BG }}
+            style={{ width: 56, height: 56, background: imageCount > 0 ? PRIMARY : "#F9FAFB" }}
           >
             <Camera size={26} color={imageCount > 0 ? "white" : "#9CA3AF"} />
           </div>
@@ -260,7 +248,7 @@ export function ImageAddScreen({ ctx }: Props) {
 
       {/* Processing */}
       {state === "processing" && (
-        <div className="bg-white rounded-2xl p-6 text-center" style={{ boxShadow: CARD_SHADOW }}>
+        <div className="bg-white rounded-2xl p-6 text-center" style={{ boxShadow: "0 1px 6px rgba(0,0,0,0.07)" }}>
           <div
             className="mx-auto mb-4 rounded-full animate-spin"
             style={{ width: 40, height: 40, border: `3px solid ${PRIMARY}`, borderTopColor: "transparent" }}
@@ -289,17 +277,15 @@ export function ImageAddScreen({ ctx }: Props) {
                 key={item.id}
                 className="bg-white rounded-2xl p-4"
                 style={{
-                  boxShadow: item.confirmed
-                    ? `0 0 0 2px ${SUCCESS}, ${CARD_SHADOW}`
-                    : CARD_SHADOW,
-                  border: `1px solid ${item.confirmed ? SUCCESS : CELL_BORDER}`,
+                  boxShadow: "0 1px 6px rgba(0,0,0,0.07)",
+                  borderLeft: item.confirmed ? `3px solid #10B981` : `3px solid #E5E7EB`,
                   opacity: item.removed ? 0.4 : 1,
                 }}
               >
                 <div className="flex items-start gap-3">
                   <div
                     className="flex items-center justify-center rounded-xl shrink-0 text-xl"
-                    style={{ width: 44, height: 44, background: CELL_BG }}
+                    style={{ width: 44, height: 44, background: "#F9FAFB" }}
                   >
                     {item.emoji}
                   </div>
@@ -315,8 +301,8 @@ export function ImageAddScreen({ ctx }: Props) {
                         className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
                         style={
                           item.billingType === "weight"
-                            ? { background: INFO_TINT, color: INFO }
-                            : { background: SUCCESS_TINT, color: SUCCESS }
+                            ? { background: "#DBEAFE", color: "#3B82F6" }
+                            : { background: "#F0FDF4", color: "#10B981" }
                         }
                       >
                         {item.billingType === "weight" ? <><Scale size={10} /> Weight</> : <><Hash size={10} /> Count</>}
@@ -336,11 +322,11 @@ export function ImageAddScreen({ ctx }: Props) {
                     {item.needsInput && (
                       <div
                         className="rounded-xl p-3 mb-2"
-                        style={{ background: WARNING_TINT }}
+                        style={{ background: "#FEF3C7" }}
                       >
                         <div className="flex items-center gap-2 mb-1">
                           <AlertTriangle size={12} color="#F59E0B" />
-                          <p className="text-xs" style={{ color: WARNING_STRONG }}>
+                          <p className="text-xs" style={{ color: "#92400E" }}>
                             {item.billingType === "weight"
                               ? "Weight not detected — please enter manually"
                               : "Enter quantity manually"}
@@ -355,7 +341,7 @@ export function ImageAddScreen({ ctx }: Props) {
                               setInputValues((prev) => ({ ...prev, [item.id]: e.target.value }))
                             }
                             className="flex-1 px-3 py-2 rounded-lg border text-sm outline-none"
-                            style={{ borderColor: BORDER }}
+                            style={{ borderColor: "#E5E7EB" }}
                           />
                           <span className="text-xs text-gray-400">{item.unit}</span>
                         </div>
@@ -381,8 +367,8 @@ export function ImageAddScreen({ ctx }: Props) {
                       onClick={() => toggleConfirm(item.id)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold"
                       style={{
-                        background: item.confirmed ? SUCCESS_TINT : PRIMARY,
-                        color: item.confirmed ? SUCCESS : "white",
+                        background: item.confirmed ? "#D1FAE5" : PRIMARY,
+                        color: item.confirmed ? "#10B981" : "white",
                       }}
                     >
                       <CheckCircle2 size={13} />
@@ -398,7 +384,7 @@ export function ImageAddScreen({ ctx }: Props) {
             <button
               onClick={handleAddAll}
               className="w-full py-4 rounded-2xl text-white font-bold flex items-center justify-center gap-2"
-              style={{ background: PRIMARY, boxShadow: ACCENT_SHADOW }}
+              style={{ background: PRIMARY }}
             >
               <ShoppingCart size={18} />
               Add {confirmedItems.length} Item{confirmedItems.length > 1 ? "s" : ""} to Cart
@@ -409,9 +395,9 @@ export function ImageAddScreen({ ctx }: Props) {
 
       {/* Info note */}
       {state === "idle" && (
-        <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: WARNING_TINT }}>
-          <Zap size={14} color={SUCCESS} className="mt-0.5 shrink-0" />
-          <p className="text-xs text-gray-500">
+        <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: "#F0FDF4" }}>
+          <Zap size={14} color="#10B981" className="mt-0.5 shrink-0" />
+          <p className="text-xs" style={{ color: "#065F46" }}>
             Our AI can detect multiple products from a single image. For weight-based products, ensure the weighing scale display is visible in the same frame.
           </p>
         </div>

@@ -3,21 +3,13 @@ import {
   ArrowLeft, Camera, RefreshCw, CheckCircle2, AlertTriangle,
   Edit3, Zap, Scale, ShoppingCart
 } from "lucide-react";
-import { BillingCtx } from "./types";
-import {
-  PRIMARY, PRIMARY_TINT,
-  SUCCESS, SUCCESS_STRONG, SUCCESS_TINT, SUCCESS_BORDER,
-  WARNING, WARNING_STRONG, WARNING_TINT,
-  DANGER, DANGER_TINT,
-  INFO, INFO_TINT,
-  SURFACE_MUTED, SURFACE_SUBTLE, BORDER,
-  CARD_SHADOW, ACCENT_SHADOW,
-} from "./tokens";
+import { BillingCtx, CartItem, PRIMARY, formatRupee } from "./types";
 
 type Stage = "capture" | "processing" | "verify" | "manual-entry";
 
 interface ProcessStep {
   label: string;
+  subLabel?: string;
   done: boolean;
   active: boolean;
   error?: boolean;
@@ -34,10 +26,10 @@ export function WeightCaptureScreen({ ctx }: Props) {
   const [editingWeight, setEditingWeight] = useState(false);
   const [editWeight, setEditWeight] = useState("");
   const [processSteps, setProcessSteps] = useState<ProcessStep[]>([
-    { label: "Validating image quality", done: false, active: false },
-    { label: "Detecting product", done: false, active: false },
-    { label: "Reading weight from scale", done: false, active: false },
-    { label: "Fetching configured price", done: false, active: false },
+    { label: "Validating image quality", subLabel: "", done: false, active: false },
+    { label: "Detecting product", subLabel: "", done: false, active: false },
+    { label: "Reading weight from scale", subLabel: "", done: false, active: false },
+    { label: "Fetching configured price", subLabel: "", done: false, active: false },
   ]);
 
   const simulateCapture = () => {
@@ -49,6 +41,16 @@ export function WeightCaptureScreen({ ctx }: Props) {
       return;
     }
     setStage("processing");
+    
+    // Values to be "detected"
+    const weightVal = parseFloat((Math.random() * 3 + 0.5).toFixed(2));
+    const capturedData = [
+      "High Clarity ✓",
+      `${sku.name} detected`,
+      `${weightVal} kg identified`,
+      `₹${sku.rate}/kg applied`
+    ];
+
     // Simulate processing steps
     const steps = [...processSteps];
     steps.forEach((s, i) => {
@@ -58,17 +60,17 @@ export function WeightCaptureScreen({ ctx }: Props) {
             ...st,
             done: idx < i,
             active: idx === i,
+            subLabel: idx < i ? capturedData[idx] : ""
           }))
         );
-      }, i * 600);
+      }, i * 800);
     });
+    
     setTimeout(() => {
-      // Simulate detected weight between 0.5 and 3.5 kg
-      const w = parseFloat((Math.random() * 3 + 0.5).toFixed(2));
-      setDetectedWeight(w);
-      setProcessSteps((prev) => prev.map((s) => ({ ...s, done: true, active: false })));
-      setTimeout(() => setStage("verify"), 300);
-    }, processSteps.length * 600 + 200);
+      setDetectedWeight(weightVal);
+      setProcessSteps((prev) => prev.map((s, idx) => ({ ...s, done: true, active: false, subLabel: capturedData[idx] })));
+      setTimeout(() => setStage("verify"), 600);
+    }, processSteps.length * 800 + 400);
   };
 
   const lineTotal = detectedWeight * sku.rate;
@@ -92,9 +94,6 @@ export function WeightCaptureScreen({ ctx }: Props) {
     ctx.goTo("new-bill");
   };
 
-  const CARD_SHADOW_LOCAL = CARD_SHADOW;
-  const CELL_BG    = SURFACE_MUTED;
-
   return (
     <div className="flex flex-col gap-4">
       {/* Header */}
@@ -102,7 +101,7 @@ export function WeightCaptureScreen({ ctx }: Props) {
         <button
           onClick={() => stage === "verify" ? setStage("capture") : ctx.goTo("product-select")}
           className="flex items-center justify-center rounded-xl"
-          style={{ width: 38, height: 38, background: PRIMARY_TINT }}
+          style={{ width: 38, height: 38, background: "#FDE8EF" }}
         >
           <ArrowLeft size={18} color={PRIMARY} />
         </button>
@@ -114,7 +113,7 @@ export function WeightCaptureScreen({ ctx }: Props) {
         </div>
         <div
           className="flex items-center justify-center rounded-xl text-xl"
-          style={{ width: 38, height: 38, background: CELL_BG }}
+          style={{ width: 38, height: 38, background: "#F9FAFB" }}
         >
           {sku.emoji}
         </div>
@@ -123,7 +122,7 @@ export function WeightCaptureScreen({ ctx }: Props) {
       {/* Product Info */}
       <div
         className="rounded-xl p-3 flex items-center justify-between"
-        style={{ background: CELL_BG }}
+        style={{ background: "#F9FAFB" }}
       >
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-0.5" style={{ fontSize: 9 }}>SELECTED PRODUCT</p>
@@ -143,11 +142,10 @@ export function WeightCaptureScreen({ ctx }: Props) {
           <div className="flex gap-2">
             <button
               onClick={() => setUseManual(false)}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-colors"
               style={{
-                background: !useManual ? PRIMARY : CELL_BG,
-                color: !useManual ? "white" : PRIMARY,
-                border: `1.5px solid ${!useManual ? PRIMARY : BORDER}`,
+                background: !useManual ? PRIMARY : "#F9FAFB",
+                color: !useManual ? "white" : "#6B7280",
               }}
             >
               <Camera size={16} />
@@ -155,11 +153,10 @@ export function WeightCaptureScreen({ ctx }: Props) {
             </button>
             <button
               onClick={() => setUseManual(true)}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-colors"
               style={{
-                background: useManual ? PRIMARY : CELL_BG,
-                color: useManual ? "white" : PRIMARY,
-                border: `1.5px solid ${useManual ? PRIMARY : BORDER}`,
+                background: useManual ? PRIMARY : "#F9FAFB",
+                color: useManual ? "white" : "#6B7280",
               }}
             >
               <Edit3 size={16} />
@@ -227,7 +224,7 @@ export function WeightCaptureScreen({ ctx }: Props) {
           ) : (
             <>
               {/* Manual Weight Entry */}
-              <div className="bg-white rounded-2xl p-5" style={{ boxShadow: CARD_SHADOW_LOCAL }}>
+              <div className="bg-white rounded-2xl p-5" style={{ boxShadow: "0 1px 6px rgba(0,0,0,0.07)" }}>
                 <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2" style={{ fontSize: 10 }}>
                   ENTER WEIGHT MANUALLY
                 </p>
@@ -238,7 +235,7 @@ export function WeightCaptureScreen({ ctx }: Props) {
                     onChange={(e) => setManualWeight(e.target.value)}
                     placeholder="0.00"
                     className="flex-1 text-3xl font-bold text-center outline-none border-b-2 pb-2"
-                    style={{ borderColor: manualWeight ? PRIMARY : BORDER, color: PRIMARY }}
+                    style={{ borderColor: manualWeight ? PRIMARY : "#E5E7EB", color: PRIMARY }}
                     step="0.01"
                     min="0"
                   />
@@ -253,10 +250,10 @@ export function WeightCaptureScreen({ ctx }: Props) {
                 )}
                 <div
                   className="mt-3 p-2 rounded-lg flex items-center gap-2"
-                  style={{ background: WARNING_TINT }}
+                  style={{ background: "#FEF3C7" }}
                 >
-                  <AlertTriangle size={13} color={WARNING} />
-                  <p className="text-xs" style={{ color: WARNING_STRONG }}>
+                  <AlertTriangle size={13} color="#F59E0B" />
+                  <p className="text-xs" style={{ color: "#92400E" }}>
                     Manual entry will be flagged for supervisor review
                   </p>
                 </div>
@@ -266,9 +263,7 @@ export function WeightCaptureScreen({ ctx }: Props) {
                 disabled={!manualWeight || isNaN(parseFloat(manualWeight))}
                 className="w-full py-4 rounded-2xl text-white font-bold"
                 style={{
-                  background: manualWeight && !isNaN(parseFloat(manualWeight)) ? PRIMARY : CELL_BG,
-                  color: manualWeight && !isNaN(parseFloat(manualWeight)) ? "white" : PRIMARY,
-                  border: `1.5px solid ${manualWeight && !isNaN(parseFloat(manualWeight)) ? PRIMARY : BORDER}`,
+                  background: manualWeight && !isNaN(parseFloat(manualWeight)) ? PRIMARY : "#D1D5DB",
                 }}
               >
                 Continue
@@ -280,17 +275,17 @@ export function WeightCaptureScreen({ ctx }: Props) {
 
       {/* ── PROCESSING STAGE ── */}
       {stage === "processing" && (
-        <div className="bg-white rounded-2xl p-6" style={{ boxShadow: CARD_SHADOW_LOCAL }}>
+        <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 1px 6px rgba(0,0,0,0.07)" }}>
           <p className="text-sm font-bold text-gray-900 mb-4 text-center">Analysing Image...</p>
           <div className="flex flex-col gap-3">
             {processSteps.map((step, i) => (
               <div key={i} className="flex items-center gap-3">
                 <div
                   className="flex items-center justify-center rounded-full shrink-0"
-                  style={{ width: 28, height: 28, background: step.done ? SUCCESS_TINT : step.active ? PRIMARY_TINT : CELL_BG }}
+                  style={{ width: 28, height: 28, background: step.done ? "#D1FAE5" : step.active ? "#FDE8EF" : "#F9FAFB" }}
                 >
                   {step.done ? (
-                    <CheckCircle2 size={16} color={SUCCESS} />
+                    <CheckCircle2 size={16} color="#10B981" />
                   ) : step.active ? (
                     <div
                       className="rounded-full animate-spin"
@@ -299,19 +294,26 @@ export function WeightCaptureScreen({ ctx }: Props) {
                   ) : (
                     <div
                       className="rounded-full"
-                      style={{ width: 8, height: 8, background: BORDER }}
+                      style={{ width: 8, height: 8, background: "#D1D5DB" }}
                     />
                   )}
                 </div>
-                <p
-                  className="text-sm"
-                  style={{
-                    color: step.done ? SUCCESS : step.active ? PRIMARY : "#9CA3AF",
-                    fontWeight: step.active ? 600 : 400,
-                  }}
-                >
-                  {step.label}
-                </p>
+                <div className="flex-1 min-w-0">
+                  <p
+                    className="text-sm"
+                    style={{
+                      color: step.done ? "#10B981" : step.active ? PRIMARY : "#9CA3AF",
+                      fontWeight: step.active ? 600 : 400,
+                    }}
+                  >
+                    {step.label}
+                  </p>
+                  {step.done && step.subLabel && (
+                    <p className="text-[11px] font-bold text-green-600 mt-0.5 animate-in fade-in slide-in-from-top-1 duration-300">
+                      {step.subLabel}
+                    </p>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -350,14 +352,14 @@ export function WeightCaptureScreen({ ctx }: Props) {
           )}
 
           {/* Detected Values */}
-          <div className="bg-white rounded-2xl p-4" style={{ boxShadow: CARD_SHADOW_LOCAL }}>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white rounded-2xl p-4" style={{ boxShadow: "0 1px 6px rgba(0,0,0,0.07)" }}>
+            <div className="grid grid-cols-2 gap-4">
               {/* Product */}
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1" style={{ fontSize: 9 }}>PRODUCT</p>
                 <div
                   className="rounded-xl px-3 py-2 flex items-center justify-between"
-                  style={{ background: CELL_BG }}
+                  style={{ background: "#F9FAFB" }}
                 >
                   <p className="font-bold text-gray-900 text-sm">{sku.name}</p>
                   {!useManual && <CheckCircle2 size={14} color="#10B981" />}
@@ -371,7 +373,7 @@ export function WeightCaptureScreen({ ctx }: Props) {
                 {!editingWeight ? (
                   <div
                     className="rounded-xl px-3 py-2 flex items-center justify-between"
-                    style={{ background: CELL_BG }}
+                    style={{ background: "#F9FAFB" }}
                   >
                     <p className="font-bold text-gray-900 text-sm">{detectedWeight} kg</p>
                     <button onClick={() => { setEditingWeight(true); setEditWeight(String(detectedWeight)); }}>
@@ -399,17 +401,17 @@ export function WeightCaptureScreen({ ctx }: Props) {
             {editingWeight && (
               <div
                 className="mt-2 p-2 rounded-lg flex items-center gap-2"
-                style={{ background: WARNING_TINT }}
+                style={{ background: "#FEF3C7" }}
               >
-                <AlertTriangle size={13} color={WARNING} />
-                <p className="text-xs" style={{ color: WARNING_STRONG }}>Weight correction flagged for review</p>
+                <AlertTriangle size={13} color="#F59E0B" />
+                <p className="text-xs" style={{ color: "#92400E" }}>Weight correction flagged for review</p>
               </div>
             )}
 
             {/* Line Total */}
             <div
               className="mt-4 rounded-xl p-3 flex items-center justify-between"
-              style={{ background: CELL_BG }}
+              style={{ background: "#FDE8EF" }}
             >
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest mb-0.5" style={{ fontSize: 9, color: PRIMARY }}>LINE TOTAL</p>
@@ -427,7 +429,7 @@ export function WeightCaptureScreen({ ctx }: Props) {
               <button
                 onClick={() => setStage("capture")}
                 className="flex-1 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
-                style={{ background: PRIMARY_TINT, color: PRIMARY }}
+                style={{ background: "#FDE8EF", color: PRIMARY }}
               >
                 <RefreshCw size={15} />
                 Retake
@@ -436,7 +438,7 @@ export function WeightCaptureScreen({ ctx }: Props) {
             <button
               onClick={handleAddToCart}
               className="flex-1 py-3 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2"
-              style={{ background: PRIMARY, boxShadow: ACCENT_SHADOW }}
+              style={{ background: PRIMARY }}
             >
               <ShoppingCart size={15} />
               Add to Cart

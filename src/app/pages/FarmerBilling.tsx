@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Screen, Market, SKU, CartItem, BillingCtx } from "./farmer-billing/types";
-import { PAGE_BG } from "./farmer-billing/tokens";
 import { HomeScreen } from "./farmer-billing/HomeScreen";
 import { MarketSelectScreen } from "./farmer-billing/MarketSelectScreen";
 import { NewBillScreen } from "./farmer-billing/NewBillScreen";
@@ -65,7 +64,7 @@ export function FarmerBilling() {
   };
 
   return (
-    <div className="flex-1 p-4 md:p-8 overflow-y-auto w-full h-full max-w-5xl mx-auto" style={{ background: PAGE_BG, minHeight: "100%" }}>
+    <div className="flex-1 p-4 md:p-8 overflow-y-auto w-full h-full max-w-5xl mx-auto">
       {renderScreen()}
     </div>
   );
