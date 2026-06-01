@@ -63,8 +63,8 @@ export function LocationFinalization() {
     return () => { clearTimeout(scrollTimer); clearTimeout(clearTimer); };
   }, [highlightId]);
 
-  const filtered = useMemo(() =>
-    FINALIZATIONS.filter(f => {
+  const filtered = useMemo(() => {
+    const results = FINALIZATIONS.filter(f => {
       if (filters.dateFrom && f.createdAt < new Date(filters.dateFrom)) return false;
       if (filters.dateTo && f.createdAt > new Date(filters.dateTo + 'T23:59:59')) return false;
       if (filters.marketType !== 'All' && f.marketType !== filters.marketType) return false;
@@ -72,7 +72,13 @@ export function LocationFinalization() {
       if (currentUser.role !== 'Admin' && currentUser.subordinates.length === 0 && f.createdBy !== currentUser.id) return false;
       if (search && !f.marketName.toLowerCase().includes(search.toLowerCase()) && !f.id.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
-    }), [filters, currentUser, search]);
+    });
+    return results.sort((a, b) => {
+      if (a.status === 'Approved' && b.status !== 'Approved') return -1;
+      if (b.status === 'Approved' && a.status !== 'Approved') return 1;
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    });
+  }, [filters, currentUser, search]);
 
   const pendingApprovals = APPROVALS.filter(a => a.module === 'Location Finalization' && a.status === 'Pending' && a.assignedTo === currentUser.id && !resolved[a.id]);
   const overdueApprovals = pendingApprovals.filter(a => differenceInDays(TODAY, a.requestedAt) > OVERDUE_DAYS);
