@@ -237,7 +237,7 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
     setSelectedKey(null);
   }, [activeTool, erasing, grid, updateGrid]);
 
-  const handleCellMouseDown = (r: number, c: number, e: React.MouseEvent) => {
+  const handleCellMouseDown = (r: number, c: number, e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     const k = cellKey(r, c);
     if (!activeTool && !erasing) {
@@ -260,6 +260,18 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
     if (dragSrc) { setDragOver(k); return; }
     if (isPainting) paintCell(r, c);
   }, [dragSrc, isPainting, paintCell]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (!el) return;
+    const rStr = el.getAttribute('data-r');
+    const cStr = el.getAttribute('data-c');
+    if (rStr != null && cStr != null) {
+      handleCellMouseEnter(parseInt(rStr, 10), parseInt(cStr, 10));
+    }
+  }, [handleCellMouseEnter]);
 
   const handleMouseUp = useCallback(() => {
     if (dragSrc && dragOver && dragOver !== dragSrc) {
@@ -490,8 +502,13 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
         onContextMenu={e => e.preventDefault()}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onTouchEnd={handleMouseUp}
+        onTouchCancel={handleMouseUp}
       >
-        <div style={{ userSelect: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: '100%', minHeight: '100%', padding: '24px' }}>
+        <div 
+          style={{ userSelect: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: '100%', minHeight: '100%', padding: '24px' }}
+          onTouchMove={handleTouchMove}
+        >
           {Array.from({ length: rows }, (_, r) => (
             <div key={r} className="flex">
               {Array.from({ length: cols }, (_, c) => {
@@ -502,7 +519,10 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
                 const cat = el?.type === 'stall' ? getCat(el.catId) : undefined;
                 return (
                   <div key={c}
+                    data-r={r}
+                    data-c={c}
                     onMouseDown={e => handleCellMouseDown(r, c, e)}
+                    onTouchStart={e => handleCellMouseDown(r, c, e)}
                     onMouseEnter={() => handleCellMouseEnter(r, c)}
                     onContextMenu={e => {
                       e.preventDefault();
@@ -510,7 +530,7 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
                       updateGrid(next);
                       if (selectedKey === k) setSelectedKey(null);
                     }}
-                    style={{ width: cellSize, height: cellSize, position: 'relative', flexShrink: 0 }}
+                    style={{ width: cellSize, height: cellSize, position: 'relative', flexShrink: 0, touchAction: (activeTool || erasing || el) ? 'none' : 'auto' }}
                     className={`${showGrid ? 'border border-gray-200' : ''} ${
                       isSelected ? 'ring-2 ring-inset ring-blue-400 z-10' : ''
                     } ${dragOver === k && dragSrc && dragSrc !== k ? 'ring-2 ring-inset ring-emerald-400 bg-emerald-50/60 z-10' : ''
