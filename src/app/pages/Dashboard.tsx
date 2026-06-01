@@ -400,7 +400,7 @@ export function Dashboard() {
   };
 
   return (
-    <div className="min-h-full bg-gray-50">
+    <div className="min-h-full bg-rose-50/40">
       {/* Desktop top bar */}
       <div className="hidden md:flex px-6 py-3.5 bg-white border-b border-gray-100 items-center justify-between">
         <div>
