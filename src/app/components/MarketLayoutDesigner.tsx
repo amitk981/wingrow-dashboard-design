@@ -546,7 +546,7 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
           </button>
         </div>
 
-        <div className="text-[11px] text-gray-400 hidden sm:block ml-2">
+        <div className="text-[11px] text-gray-400 ml-2 whitespace-nowrap">
           <span className="font-bold text-gray-700">{totalStalls}</span> stalls · {cols}×{rows}
         </div>
       </div>
