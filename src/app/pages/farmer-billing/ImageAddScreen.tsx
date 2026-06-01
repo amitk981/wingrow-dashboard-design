@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   ArrowLeft, Camera, CheckCircle2, X, Scale, Hash,
   Zap, AlertTriangle, Plus, ShoppingCart
@@ -48,17 +48,94 @@ export function ImageAddScreen({ ctx }: Props) {
   const [imageCount, setImageCount] = useState(0);
   const [items, setItems] = useState<DetectedItem[]>([]);
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleUpload = () => {
-    setImageCount((c) => Math.min(c + 1, 4));
-    if (imageCount === 0) {
-      setState("uploading");
-      setTimeout(() => setState("processing"), 800);
-      setTimeout(() => {
-        setItems(DETECTED_MOCK.map((i) => ({ ...i })));
-        setState("done");
-      }, 2600);
-    }
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImageCount((c) => c + 1);
+    setState("uploading");
+
+    setTimeout(() => {
+      setState("processing");
+      try {
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          try {
+            const base64String = reader.result as string;
+            const base64Data = base64String.replace(/^data:image\/[a-z]+;base64,/, "");
+
+            const payload = {
+              model: 'gpt-4o-mini',
+              messages: [{
+                role: 'user',
+                content: [
+                  { type: 'text', text: 'Analyze this weighing scale image. Identify: 1)crop/produce name 2)weight on scale in kg 3)confidence(high/medium/low). Return ONLY JSON:{"crop":"name","weight":number,"weight_unit":"kg","confidence":"high/medium/low"}' },
+                  { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + base64Data, detail: 'low' } }
+                ]
+              }],
+              max_tokens: 300,
+              response_format: { type: 'json_object' }
+            };
+
+            const res = await fetch('https://api.openai.com/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+              },
+              body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error?.message || "API Error");
+
+            const parsed = JSON.parse(data.choices[0].message.content);
+            const cropName = parsed.crop || "";
+            
+            // Try to match the crop name to a known SKU
+            let matchedSku = SKUS.find(s => cropName.toLowerCase().includes(s.name.toLowerCase()) || s.name.toLowerCase().includes(cropName.toLowerCase()));
+            if (!matchedSku) matchedSku = SKUS[0]; // fallback
+
+            const confMap: Record<string, number> = { high: 96, medium: 78, low: 52 };
+            const detectedConf = parsed.confidence?.toLowerCase() || "medium";
+
+            const newItem: DetectedItem = {
+              id: 'ai_' + Date.now(),
+              skuId: matchedSku.id,
+              emoji: matchedSku.emoji,
+              name: parsed.crop || matchedSku.name,
+              billingType: matchedSku.billingType,
+              unit: matchedSku.unit,
+              rate: matchedSku.rate,
+              confidence: confMap[detectedConf] || 85,
+              weight: Number(parsed.weight) || 0,
+              confirmed: false,
+              removed: false,
+              needsInput: !parsed.weight && matchedSku.billingType === "weight",
+            };
+
+            setItems((prev) => [...prev, newItem]);
+            setState("done");
+          } catch (err: any) {
+            console.error(err);
+            alert("Failed to parse API response: " + err.message);
+            setState("idle");
+            setImageCount((c) => Math.max(0, c - 1));
+          }
+        };
+        reader.readAsDataURL(file);
+      } catch (err: any) {
+        console.error(err);
+        setState("idle");
+        setImageCount((c) => Math.max(0, c - 1));
+      }
+    }, 600); // UI visual delay
   };
 
   const toggleConfirm = (id: string) => {
@@ -121,10 +198,18 @@ export function ImageAddScreen({ ctx }: Props) {
       </div>
 
       {/* Upload Zone */}
-      {(state === "idle" || state === "uploading") && (
+      <input
+        type="file"
+        accept="image/*"
+        capture="environment"
+        ref={fileInputRef}
+        className="hidden"
+        onChange={handleFileChange}
+      />
+      {(state === "idle" || state === "uploading" || state === "done") && (
         <button
-          onClick={handleUpload}
-          className="rounded-2xl flex flex-col items-center justify-center gap-3 py-10 border-2 border-dashed"
+          onClick={handleUploadClick}
+          className="rounded-2xl flex flex-col items-center justify-center gap-3 py-10 border-2 border-dashed transition-all"
           style={{ borderColor: imageCount > 0 ? PRIMARY : "#D1D5DB", background: imageCount > 0 ? "#FDE8EF" : "#F9FAFB" }}
         >
           <div
