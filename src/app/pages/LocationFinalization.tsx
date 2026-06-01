@@ -299,11 +299,11 @@ export function LocationFinalization() {
                       <td className="px-4 py-3 text-xs text-gray-600 text-right">{f.numberOfOutlets}</td>
                       <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap">{f.finalizedRent}</td>
                       <td className="px-4 py-3">
-                        <div className="flex flex-col items-center justify-center gap-1 text-center">
-                          <span className="inline-block text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 whitespace-nowrap">
+                        <div className="flex flex-col items-center justify-center gap-1.5 text-center mx-auto">
+                          <span className="inline-block w-[125px] text-[10px] font-bold py-1 rounded-full bg-[#dcfce7] border border-[#a7f3d0] text-[#047857] whitespace-nowrap tracking-wide">
                             {f.status === 'Sent to Onboarding' ? 'COMPLETED' : f.status.toUpperCase()}
                           </span>
-                          <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                          <span className="text-[10px] text-[#94a3b8] whitespace-nowrap font-medium">
                             {format(f.updatedAt, 'MMM d, yyyy, h:mm aa')}
                           </span>
                         </div>
