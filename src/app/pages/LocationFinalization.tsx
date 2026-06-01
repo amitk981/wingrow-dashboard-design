@@ -306,13 +306,15 @@ export function LocationFinalization() {
                         {f.status === 'Approved' ? (
                           <button
                             onClick={() => setOnboardingTarget(f)}
-                            className="w-full text-[11px] font-bold bg-rose-500 hover:bg-rose-600 text-white py-2.5 rounded-xl transition-colors uppercase tracking-wide leading-snug"
+                            className="w-full h-[40px] flex items-center justify-center text-[11px] font-extrabold bg-[#ff0055] hover:bg-[#e6004c] text-white rounded-[12px] transition-colors uppercase tracking-wide"
                           >
-                            PUSH TO<br />ONBOARDING
+                            PUSH TO ONBOARDING
                           </button>
                         ) : f.status === 'Sent to Onboarding' ? (
-                          <div className="w-full bg-slate-100 rounded-xl py-2.5 text-center">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase leading-snug tracking-wide">PUSHED TO<br />ONBOARDING</p>
+                          <div className="w-full h-[40px] bg-[#f8fafc] rounded-[12px] flex items-center justify-center text-center">
+                            <p className="text-[10px] font-extrabold text-[#8ba3b8] uppercase leading-[1.3] tracking-wide">
+                              PUSHED TO<br />ONBOARDING
+                            </p>
                           </div>
                         ) : (
                           <span className="text-[11px] text-gray-400">–</span>
