@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { RotateCw, Trash2, Eraser, RefreshCw, Grid, ChevronDown, SeparatorHorizontal, Footprints, DoorOpen, SquareParking, Ban, Wrench } from 'lucide-react';
+import { RotateCw, Trash2, Eraser, RefreshCw, Grid, ChevronDown, SeparatorHorizontal, Footprints, DoorOpen, SquareParking, Ban, Wrench, ZoomIn, ZoomOut } from 'lucide-react';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -55,6 +55,9 @@ const GRID_PRESETS = [
   { label: 'M', cols: 16, rows: 12 },
   { label: 'L', cols: 22, rows: 16 },
 ];
+
+const MIN_ZOOM = 0.4;
+const MAX_ZOOM = 3;
 
 const FACING_CYCLE: Facing[] = ['N', 'E', 'S', 'W'];
 
@@ -134,10 +137,12 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
   const [paletteMode, setPaletteMode] = useState<PaletteMode>('stall');
   const [dragSrc, setDragSrc] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(1);
 
   const { cols, rows } = GRID_PRESETS[presetIdx];
   const canvasContainerRef = useRef<HTMLDivElement>(null);
-  const [cellSize, setCellSize] = useState(42);
+  const [baseCellSize, setBaseCellSize] = useState(42);
+  const cellSize = Math.round(baseCellSize * zoom);
 
   useEffect(() => {
     const el = canvasContainerRef.current;
@@ -146,13 +151,55 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
       const w = el.clientWidth;
       const h = el.clientHeight;
       const computed = Math.floor(Math.min(w / cols, h / rows));
-      setCellSize(Math.max(20, computed));
+      setBaseCellSize(Math.max(20, computed));
     };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
   }, [cols, rows]);
+
+  // ── Zoom: wheel (desktop) + pinch (mobile) ──
+  useEffect(() => {
+    const el = canvasContainerRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.15 : 0.15;
+      setZoom(z => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, +(z + delta).toFixed(2))));
+    };
+    let lastDist: number | null = null;
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        lastDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+      }
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && lastDist !== null) {
+        e.preventDefault();
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        setZoom(z => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, +(z * (dist / lastDist!)).toFixed(2))));
+        lastDist = dist;
+      }
+    };
+    const onTouchEnd = () => { lastDist = null; };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd);
+    return () => {
+      el.removeEventListener('wheel', onWheel);
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+    };
+  }, []);
 
   const stallNumbers = useMemo(() => {
     const nums: Record<string, number> = {};
@@ -292,7 +339,7 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
         {/* Size preset */}
         <div className="flex items-center bg-white border border-gray-200 rounded-lg p-0.5 gap-0.5">
           {GRID_PRESETS.map((p, i) => (
-            <button key={i} onClick={() => { setPresetIdx(i); updateGrid({}); setSelectedKey(null); }}
+            <button key={i} onClick={() => { setPresetIdx(i); updateGrid({}); setSelectedKey(null); setZoom(1); }}
               className={`text-[11px] px-2.5 py-1 rounded-md font-semibold transition-all ${
                 presetIdx === i ? 'bg-rose-500 text-white shadow-sm' : 'text-gray-400 hover:text-gray-600'
               }`}>
@@ -331,7 +378,26 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
           </div>
         ) : null}
 
-        <div className="ml-auto text-[11px] text-gray-400 hidden sm:block">
+        {/* Zoom controls */}
+        <div className="flex items-center gap-1 ml-auto">
+          <button onClick={() => setZoom(z => Math.max(MIN_ZOOM, +(z - 0.15).toFixed(2)))}
+            className="p-1.5 rounded-lg border border-gray-200 text-gray-400 hover:text-gray-600 bg-white transition-all"
+            title="Zoom out">
+            <ZoomOut size={12} />
+          </button>
+          <button onClick={() => setZoom(1)}
+            className="text-[10px] font-bold text-gray-500 hover:text-gray-700 px-1.5 py-1 rounded-lg border border-gray-200 bg-white min-w-[40px] text-center transition-all"
+            title="Reset zoom">
+            {Math.round(zoom * 100)}%
+          </button>
+          <button onClick={() => setZoom(z => Math.min(MAX_ZOOM, +(z + 0.15).toFixed(2)))}
+            className="p-1.5 rounded-lg border border-gray-200 text-gray-400 hover:text-gray-600 bg-white transition-all"
+            title="Zoom in">
+            <ZoomIn size={12} />
+          </button>
+        </div>
+
+        <div className="text-[11px] text-gray-400 hidden sm:block ml-2">
           <span className="font-bold text-gray-700">{totalStalls}</span> stalls · {cols}×{rows}
         </div>
       </div>
@@ -415,17 +481,17 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
         )}
       </div>
 
-      {/* ── Canvas — fills remaining space exactly, no scroll ── */}
+      {/* ── Canvas — zoomable & scrollable grid area ── */}
       <div
         ref={canvasContainerRef}
-        className={`flex-1 overflow-hidden bg-gray-50/60 flex items-center justify-center ${
+        className={`flex-1 overflow-auto bg-gray-50/60 ${
           dragSrc ? 'cursor-grabbing' : erasing ? 'cursor-cell' : activeTool ? 'cursor-crosshair' : 'cursor-default'
         }`}
         onContextMenu={e => e.preventDefault()}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
-        <div style={{ userSelect: 'none' }}>
+        <div style={{ userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '100%', minHeight: '100%' }}>
           {Array.from({ length: rows }, (_, r) => (
             <div key={r} className="flex">
               {Array.from({ length: cols }, (_, c) => {
