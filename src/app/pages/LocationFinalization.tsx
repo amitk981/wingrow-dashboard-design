@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router';
 import { differenceInDays, format } from 'date-fns';
-import { Plus, AlertTriangle, Clock, CheckSquare, Search, SlidersHorizontal, X, FileText } from 'lucide-react';
+import { Plus, AlertTriangle, Clock, CheckSquare, Search, SlidersHorizontal, X, FileText, MapPin, Check } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { FINALIZATIONS, APPROVALS, USERS } from '../data/mockData';
 import { Finalization, MarketType, FinalizationStatus, Approval } from '../types';
@@ -148,8 +148,101 @@ export function LocationFinalization() {
           </button>
         </div>
 
-        {/* Table */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        {/* Mobile Cards */}
+        <div className="md:hidden flex flex-col gap-4">
+          {filtered.map(f => {
+            const pending = APPROVALS.find(a => a.entityId === f.id && a.status === 'Pending' && a.assignedTo === currentUser.id);
+            const days = pending ? differenceInDays(TODAY, pending.requestedAt) : 0;
+            const rowOverdue = pending && days > OVERDUE_DAYS;
+            const isCompleted = f.status === 'Sent to Onboarding';
+            return (
+              <div key={f.id} className="bg-white rounded-[24px] border border-gray-100 shadow-sm p-4">
+                {/* Top Badges */}
+                <div className="flex items-center justify-between mb-3">
+                  <span className={`text-[10px] font-bold px-3 py-1.5 rounded-full border ${rowOverdue ? 'border-red-300 text-red-600 bg-red-50' : 'border-rose-200 text-rose-600 bg-rose-50'}`}>
+                    {f.id}
+                  </span>
+                  <span className={`text-[10px] font-bold px-3 py-1.5 rounded-full ${isCompleted ? 'bg-[#c6f6d5] text-[#22543d]' : 'bg-blue-100 text-blue-700'}`}>
+                    {isCompleted ? 'COMPLETED' : f.status.toUpperCase()}
+                  </span>
+                </div>
+
+                {/* Date & Title */}
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+                  {format(f.createdAt, "MMM d • yyyy, h:mm a")}
+                </p>
+                <h3 className="text-[20px] font-extrabold text-gray-900 mb-2 leading-tight">
+                  {f.marketName}
+                </h3>
+                
+                {/* Address */}
+                <div className="flex items-start gap-1.5 mb-5">
+                  <MapPin size={14} className="text-gray-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-[12px] text-gray-500 font-medium leading-relaxed">
+                    PIN: {f.pinCode} • {f.marketAddress}
+                  </p>
+                </div>
+
+                {/* Details Box */}
+                <div className="bg-slate-50/50 border border-slate-100 rounded-[16px] p-4 mb-5">
+                  <div className="flex items-start justify-between gap-4 mb-3">
+                    <div className="flex-1">
+                      <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Ownership</p>
+                      <p className="text-[12px] font-bold text-gray-800">{f.ownershipType}</p>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Consumer Category</p>
+                      <p className="text-[12px] font-bold text-gray-800">{f.category}</p>
+                    </div>
+                  </div>
+                  <div className="w-full h-px bg-slate-100 mb-3" />
+                  <div>
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Market Day / Time</p>
+                    <p className="text-[12px] font-bold text-gray-800">{f.operatingDays} • {f.operatingTime}</p>
+                  </div>
+                </div>
+
+                {/* Rent */}
+                <div className="border-t border-dashed border-gray-200 pt-4 mb-4 flex items-center justify-between px-1">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Finalized Rent</p>
+                  <p className="text-[22px] font-extrabold text-gray-900">
+                    {f.finalizedRent.replace('/ month', '')}
+                    <span className="text-[11px] font-medium text-gray-400 ml-1">/ month</span>
+                  </p>
+                </div>
+
+                {/* Action */}
+                <div className="border-t border-dashed border-gray-200 pt-4">
+                  {f.status === 'Approved' ? (
+                    <button onClick={() => setOnboardingTarget(f)}
+                      className="w-full text-[11px] font-bold border-[1.5px] border-rose-500 text-rose-500 hover:bg-rose-50 py-3.5 rounded-xl transition-colors uppercase tracking-widest">
+                      Send to Onboarding
+                    </button>
+                  ) : isCompleted ? (
+                    <div className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3.5 text-center flex items-center justify-center gap-2">
+                      <Check size={14} className="text-slate-400" />
+                      <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Pushed to Onboarding</p>
+                    </div>
+                  ) : (
+                    <div className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3.5 text-center">
+                      <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Pending Approval</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          
+          {filtered.length === 0 && (
+            <div className="text-center py-14 bg-white rounded-[24px] border border-gray-100 shadow-sm">
+              <CheckSquare size={36} className="mx-auto mb-2 text-gray-200" />
+              <p className="text-sm text-gray-400">No data found.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Table */}
+        <div className="hidden md:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
