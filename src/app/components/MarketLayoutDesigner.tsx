@@ -1,5 +1,11 @@
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { RotateCw, Trash2, Eraser, RefreshCw, Grid, ChevronDown, SeparatorHorizontal, Footprints, DoorOpen, SquareParking, Ban, Wrench, ZoomIn, ZoomOut } from 'lucide-react';
+import { RotateCw, Trash2, Eraser, RefreshCw, Grid, ChevronDown, SeparatorHorizontal, Footprints, DoorOpen, SquareParking, Ban, Wrench, ZoomIn, ZoomOut, Undo, Redo, Check } from 'lucide-react';
+
+const vibrate = (ms = 10) => {
+  if (typeof navigator !== 'undefined' && navigator.vibrate) {
+    navigator.vibrate(ms);
+  }
+};
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -129,6 +135,12 @@ type PaletteMode = 'stall' | 'infra' | 'erase';
 export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayoutDesignerProps) {
   const [presetIdx, setPresetIdx] = useState(0);
   const [grid, setGrid] = useState<GridMap>(initialGrid);
+  
+  // History State
+  const [history, setHistory] = useState<GridMap[]>([initialGrid]);
+  const [historyIdx, setHistoryIdx] = useState(0);
+  const lastCommittedGridRef = useRef<GridMap>(initialGrid);
+
   const [activeTool, setActiveTool] = useState<ActiveTool | null>(null);
   const [erasing, setErasing] = useState(false);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
@@ -169,17 +181,33 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
       setZoom(z => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, +(z + delta).toFixed(2))));
     };
     let lastDist: number | null = null;
+    let lastCenter: { x: number, y: number } | null = null;
     const onTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 2) {
         lastDist = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
         );
+        lastCenter = {
+          x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+          y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+        };
       }
     };
     const onTouchMove = (e: TouchEvent) => {
-      if (e.touches.length === 2 && lastDist !== null) {
+      if (e.touches.length === 2 && lastDist !== null && lastCenter !== null) {
         e.preventDefault();
+        const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        
+        // Pan
+        const dx = cx - lastCenter.x;
+        const dy = cy - lastCenter.y;
+        el.scrollLeft -= dx;
+        el.scrollTop -= dy;
+        lastCenter = { x: cx, y: cy };
+
+        // Zoom
         const dist = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
@@ -222,17 +250,58 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
 
   const totalStalls = useMemo(() => Object.values(stallCounts).reduce((a, b) => a + b, 0), [stallCounts]);
 
+  const pushHistory = useCallback((next: GridMap) => {
+    if (next === lastCommittedGridRef.current) return;
+    lastCommittedGridRef.current = next;
+    setHistory(prev => {
+      const h = prev.slice(0, historyIdx + 1);
+      return [...h, next];
+    });
+    setHistoryIdx(i => i + 1);
+  }, [historyIdx]);
+
+  const undo = () => {
+    if (historyIdx > 0) {
+      vibrate(15);
+      const nextIdx = historyIdx - 1;
+      setHistoryIdx(nextIdx);
+      const prev = history[nextIdx];
+      setGrid(prev);
+      lastCommittedGridRef.current = prev;
+      onChange?.(prev);
+    }
+  };
+
+  const redo = () => {
+    if (historyIdx < history.length - 1) {
+      vibrate(15);
+      const nextIdx = historyIdx + 1;
+      setHistoryIdx(nextIdx);
+      const next = history[nextIdx];
+      setGrid(next);
+      lastCommittedGridRef.current = next;
+      onChange?.(next);
+    }
+  };
+
   const updateGrid = useCallback((next: GridMap) => {
     setGrid(next); onChange?.(next);
   }, [onChange]);
 
+  const commitGrid = useCallback((next: GridMap) => {
+    updateGrid(next);
+    pushHistory(next);
+  }, [updateGrid, pushHistory]);
+
   const paintCell = useCallback((r: number, c: number) => {
     const k = cellKey(r, c);
     if (erasing) {
+      if (grid[k]) vibrate(10);
       const next = { ...grid }; delete next[k];
       updateGrid(next); setSelectedKey(null); return;
     }
     if (!activeTool) return;
+    if (!grid[k] || grid[k].type !== activeTool.type || grid[k].catId !== activeTool.catId) vibrate(10);
     updateGrid({ ...grid, [k]: { type: activeTool.type, catId: activeTool.catId, facing: 'S' } });
     setSelectedKey(null);
   }, [activeTool, erasing, grid, updateGrid]);
@@ -264,6 +333,18 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (e.touches.length !== 1) return;
     const touch = e.touches[0];
+    
+    // Edge Auto-Panning
+    const rect = canvasContainerRef.current?.getBoundingClientRect();
+    if (rect && (activeTool || erasing || dragSrc)) {
+      const THRESHOLD = 60;
+      const SPEED = 15;
+      if (touch.clientX < rect.left + THRESHOLD) canvasContainerRef.current!.scrollLeft -= SPEED;
+      else if (touch.clientX > rect.right - THRESHOLD) canvasContainerRef.current!.scrollLeft += SPEED;
+      if (touch.clientY < rect.top + THRESHOLD) canvasContainerRef.current!.scrollTop -= SPEED;
+      else if (touch.clientY > rect.bottom - THRESHOLD) canvasContainerRef.current!.scrollTop += SPEED;
+    }
+
     const el = document.elementFromPoint(touch.clientX, touch.clientY);
     const cellEl = el?.closest('[data-r]');
     if (!cellEl) return;
@@ -272,35 +353,43 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
     if (rStr != null && cStr != null) {
       handleCellMouseEnter(parseInt(rStr, 10), parseInt(cStr, 10));
     }
-  }, [handleCellMouseEnter]);
+  }, [handleCellMouseEnter, activeTool, erasing, dragSrc]);
 
   const handleMouseUp = useCallback(() => {
     if (dragSrc && dragOver && dragOver !== dragSrc) {
       const el = grid[dragSrc];
       if (el) {
+        vibrate(20);
         const next = { ...grid };
         delete next[dragSrc];
         next[dragOver] = el;
-        updateGrid(next);
+        commitGrid(next);
       }
     } else if (dragSrc && dragOver === dragSrc) {
       // Didn't move — treat as a select tap
       setSelectedKey(dragSrc);
     }
+    
+    if (isPainting) {
+      pushHistory(grid);
+    }
+    
     setDragSrc(null);
     setDragOver(null);
     setIsPainting(false);
-  }, [dragSrc, dragOver, grid, updateGrid]);
+  }, [dragSrc, dragOver, grid, commitGrid, isPainting, pushHistory]);
 
   const rotateSelected = () => {
     if (!selectedKey || !grid[selectedKey]) return;
-    updateGrid({ ...grid, [selectedKey]: { ...grid[selectedKey], facing: nextFacing(grid[selectedKey].facing) } });
+    vibrate(20);
+    commitGrid({ ...grid, [selectedKey]: { ...grid[selectedKey], facing: nextFacing(grid[selectedKey].facing) } });
   };
 
   const deleteSelected = () => {
     if (!selectedKey) return;
+    vibrate(20);
     const next = { ...grid }; delete next[selectedKey];
-    updateGrid(next); setSelectedKey(null);
+    commitGrid(next); setSelectedKey(null);
   };
 
   const selectStallTool = (catId: string) => {
@@ -352,7 +441,7 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
         {/* Size preset */}
         <div className="flex items-center bg-white border border-gray-200 rounded-lg p-0.5 gap-0.5">
           {GRID_PRESETS.map((p, i) => (
-            <button key={i} onClick={() => { setPresetIdx(i); updateGrid({}); setSelectedKey(null); setZoom(1); }}
+            <button key={i} onClick={() => { setPresetIdx(i); commitGrid({}); setSelectedKey(null); setZoom(1); vibrate(20); }}
               className={`text-[11px] px-2.5 py-1 rounded-md font-semibold transition-all ${
                 presetIdx === i ? 'bg-rose-500 text-white shadow-sm' : 'text-gray-400 hover:text-gray-600'
               }`}>
@@ -368,9 +457,23 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
           <Grid size={13} />
         </button>
 
+        {/* Undo/Redo */}
+        <div className="flex items-center gap-0.5 ml-1 bg-white border border-gray-200 rounded-lg p-0.5">
+          <button onClick={undo} disabled={historyIdx === 0}
+            className={`p-1.5 rounded-md transition-all ${historyIdx === 0 ? 'text-gray-300' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100 active:bg-gray-200'}`}
+            title="Undo">
+            <Undo size={14} />
+          </button>
+          <button onClick={redo} disabled={historyIdx === history.length - 1}
+            className={`p-1.5 rounded-md transition-all ${historyIdx === history.length - 1 ? 'text-gray-300' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100 active:bg-gray-200'}`}
+            title="Redo">
+            <Redo size={14} />
+          </button>
+        </div>
+
         {/* Clear */}
-        <button onClick={() => { updateGrid({}); setSelectedKey(null); }}
-          className="flex items-center gap-1 text-[11px] px-2 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:text-red-500 hover:border-red-200 bg-white transition-all">
+        <button onClick={() => { const next = {}; commitGrid(next); setSelectedKey(null); vibrate(20); }}
+          className="flex items-center gap-1 text-[11px] px-2 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:text-red-500 hover:border-red-200 bg-white transition-all ml-1">
           <RefreshCw size={10} /> Clear
         </button>
 
@@ -495,6 +598,18 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
       </div>
 
       {/* ── Canvas — zoomable & scrollable grid area ── */}
+      <div className="relative flex-1 flex overflow-hidden">
+        
+      {/* Floating Done Button */}
+      {(activeTool || erasing) && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
+          <button onClick={() => { setActiveTool(null); setErasing(false); vibrate(10); }}
+            className="flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-full font-bold shadow-2xl hover:bg-gray-800 transition-all active:scale-95">
+            <Check size={18} className="text-green-400" /> Done
+          </button>
+        </div>
+      )}
+
       <div
         ref={canvasContainerRef}
         className={`flex-1 overflow-auto bg-gray-50/60 ${
@@ -573,6 +688,7 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
             </div>
           ))}
         </div>
+      </div>
       </div>
 
       {/* ── Footer summary ── */}
