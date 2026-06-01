@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router';
 import {
   LayoutDashboard, CheckSquare,
-  Download, LogOut, ChevronLeft, ChevronRight, Menu, X,
+  Download, LogOut, ChevronLeft, ChevronRight, Menu, X, Receipt,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { USERS } from '../data/mockData';
@@ -11,6 +11,7 @@ import { AppModule } from '../types';
 const NAV_ITEMS: { label: string; path: string; icon: React.ElementType; module: AppModule | null }[] = [
   { label: 'Dashboard', path: '/', icon: LayoutDashboard, module: null },
   { label: 'Location Finalization', path: '/location-finalization', icon: CheckSquare, module: 'Location Finalization' },
+  { label: 'Farmer Billing', path: '/farmer-billing', icon: Receipt, module: 'Farmer Billing' },
 ];
 
 function userColor(id: string): string {

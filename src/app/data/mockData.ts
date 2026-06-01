@@ -11,7 +11,7 @@ export const USERS: AppUser[] = [
     initials: 'MP',
     organization: 'Wingrow',
     role: 'Admin',
-    permissions: ['Proposal Initiation', 'Location Hunting', 'Location Finalization', 'Market Onboarding'],
+    permissions: ['Proposal Initiation', 'Location Hunting', 'Location Finalization', 'Market Onboarding', 'Farmer Billing'],
     subordinates: ['u2', 'u3', 'u4', 'u5', 'u6', 'u7', 'u8', 'u9'],
   },
   {
@@ -20,7 +20,7 @@ export const USERS: AppUser[] = [
     initials: 'AM',
     organization: 'Wingrow',
     role: 'Business Development Manager',
-    permissions: ['Proposal Initiation', 'Location Hunting', 'Location Finalization'],
+    permissions: ['Proposal Initiation', 'Location Hunting', 'Location Finalization', 'Farmer Billing'],
     subordinates: ['u4', 'u5', 'u6', 'u7'],
   },
   {

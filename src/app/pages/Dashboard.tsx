@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { differenceInDays, format } from 'date-fns';
 import {
   FileText, MapPin, CheckSquare, Store, Clock, ArrowRight,
   CheckCircle, Users, Building2,
-  ShoppingBag, Layers, Check, X,
+  ShoppingBag, Layers, Check, X, Receipt,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { PROPOSALS, SCOUT_TRIPS, FINALIZATIONS, ONBOARDINGS, APPROVALS, USERS } from '../data/mockData';
@@ -328,6 +329,7 @@ function TeamActivity({
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 export function Dashboard() {
   const { currentUser, filters, setFilters } = useAppContext();
+  const navigate = useNavigate();
 
   const has = (m: AppModule) => currentUser.permissions.includes(m);
 
@@ -425,6 +427,34 @@ export function Dashboard() {
             <p className="text-gray-400 text-xs mb-4">
               {currentUser.role} · {currentUser.organization}
             </p>
+          </div>
+        </div>
+
+        {/* Quick Links */}
+        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-800 mb-3">Quick Navigation</h3>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { icon: MapPin, label: "Location\nHunting", color: "#14b8a6", bg: "bg-teal-50", path: null },
+              { icon: CheckSquare, label: "Location\nFinalisation", color: "#f59e0b", bg: "bg-amber-50", path: '/location-finalization' },
+              { icon: Receipt, label: "Farmer\nBilling", color: "#e11d48", bg: "bg-rose-50", path: '/farmer-billing' },
+            ].map((item, i) => (
+              <button 
+                key={i} 
+                onClick={() => item.path && navigate(item.path)}
+                disabled={!item.path}
+                className={`flex flex-col items-center gap-2 p-3 rounded-xl transition-all ${item.path ? 'bg-gray-50 hover:bg-gray-100 cursor-pointer hover:shadow-sm' : 'bg-gray-50/50 cursor-not-allowed opacity-60'}`} 
+              >
+                <div
+                  className={`flex items-center justify-center rounded-xl w-10 h-10 ${item.bg}`}
+                >
+                  <item.icon size={20} color={item.color} />
+                </div>
+                <span className="text-xs text-center text-gray-600 font-medium leading-tight whitespace-pre-line">
+                  {item.label}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
 
