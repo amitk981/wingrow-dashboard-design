@@ -420,36 +420,36 @@ export function OnboardingDrawer({ finalization, onClose, onSubmit }: Onboarding
         </div>
 
         {/* ── Footer ── */}
-        <div className="flex-shrink-0 border-t border-gray-200 bg-white px-3 py-3">
+        <div className="flex-shrink-0 border-t border-gray-200 bg-white px-4 py-4">
           <div className="flex items-center gap-2">
             {/* Back (steps 2-4) or Cancel (step 1) */}
             {step > 1 ? (
               <button onClick={() => setStep(s => s - 1)}
-                className="flex items-center gap-1.5 px-4 py-2.5 border border-gray-200 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors whitespace-nowrap">
-                <ArrowLeft size={13} /> Back
+                className="flex flex-1 items-center justify-center gap-1.5 py-3 border border-gray-200 rounded-2xl text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap">
+                <ArrowLeft size={14} /> Back
               </button>
             ) : (
               <button onClick={onClose}
-                className="px-4 py-2.5 border border-gray-200 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors whitespace-nowrap">
+                className="flex flex-1 items-center justify-center py-3 border border-gray-200 rounded-2xl text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap">
                 Cancel
               </button>
             )}
 
             {/* Save Draft */}
             <button
-              className="px-4 py-2.5 border border-gray-200 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors whitespace-nowrap">
+              className="flex flex-1 items-center justify-center py-3 border border-gray-200 rounded-2xl text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap">
               Save Draft
             </button>
 
-            {/* Continue / Finish — takes all remaining space */}
+            {/* Continue / Finish */}
             <button onClick={handleNext} disabled={saving}
-              className="flex-1 flex items-center justify-between gap-2 bg-rose-500 hover:bg-rose-600 disabled:bg-rose-300 text-white rounded-2xl py-2.5 pl-4 pr-3 transition-colors min-w-0">
-              <span className="text-xs font-bold whitespace-nowrap overflow-hidden text-ellipsis">
+              className="flex-[1.8] flex items-center justify-center gap-1.5 bg-[#ff1463] hover:bg-[#e60d55] disabled:bg-[#ff1463]/50 text-white rounded-2xl py-3 px-3 transition-colors min-w-0">
+              <span className="text-[13px] font-extrabold whitespace-nowrap overflow-hidden text-ellipsis">
                 {saving ? 'Saving…' : nextLabel}
               </span>
               {saving
-                ? <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin flex-shrink-0" />
-                : <ArrowRight size={14} className="flex-shrink-0" />
+                ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin flex-shrink-0" />
+                : <ArrowRight size={15} className="flex-shrink-0" strokeWidth={2.5} />
               }
             </button>
           </div>
