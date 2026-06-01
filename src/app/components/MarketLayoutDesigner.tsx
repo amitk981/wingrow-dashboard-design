@@ -323,8 +323,15 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
       updateGrid(next); setSelectedKey(null); return;
     }
     if (!activeTool) return;
-    if (!grid[k] || grid[k].type !== activeTool.type || grid[k].catId !== activeTool.catId) vibrate(10);
-    updateGrid({ ...grid, [k]: { type: activeTool.type, catId: activeTool.catId, facing: 'S' } });
+    
+    const existing = grid[k];
+    if (existing && existing.type === activeTool.type && existing.catId === activeTool.catId) {
+      vibrate(20);
+      updateGrid({ ...grid, [k]: { ...existing, facing: nextFacing(existing.facing) } });
+    } else {
+      if (!existing) vibrate(10);
+      updateGrid({ ...grid, [k]: { type: activeTool.type, catId: activeTool.catId, facing: 'S' } });
+    }
     setSelectedKey(null);
   }, [activeTool, erasing, grid, updateGrid]);
 
@@ -389,7 +396,14 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
       }
     } else if (dragSrc && dragOver === dragSrc) {
       // Didn't move — treat as a select tap
-      setSelectedKey(dragSrc);
+      if (selectedKey === dragSrc) {
+        // Tapped while already selected -> Rotate!
+        vibrate(20);
+        const el = grid[dragSrc];
+        if (el) commitGrid({ ...grid, [dragSrc]: { ...el, facing: nextFacing(el.facing) } });
+      } else {
+        setSelectedKey(dragSrc);
+      }
     }
     
     if (isPainting) {
@@ -399,7 +413,7 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
     setDragSrc(null);
     setDragOver(null);
     setIsPainting(false);
-  }, [dragSrc, dragOver, grid, commitGrid, isPainting, pushHistory]);
+  }, [dragSrc, dragOver, grid, commitGrid, isPainting, pushHistory, selectedKey]);
 
   const rotateSelected = () => {
     if (!selectedKey || !grid[selectedKey]) return;
