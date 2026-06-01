@@ -151,7 +151,7 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
       const w = el.clientWidth;
       const h = el.clientHeight;
       const computed = Math.floor(Math.min(w / cols, h / rows));
-      setBaseCellSize(Math.max(20, computed));
+      setBaseCellSize(Math.max(32, computed));
     };
     measure();
     const ro = new ResizeObserver(measure);
@@ -393,19 +393,19 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
         {/* Zoom controls */}
         <div className="flex items-center gap-1 ml-auto">
           <button onClick={() => setZoom(z => Math.max(MIN_ZOOM, +(z - 0.15).toFixed(2)))}
-            className="p-1.5 rounded-lg border border-gray-200 text-gray-400 hover:text-gray-600 bg-white transition-all"
+            className="p-2 rounded-lg border border-gray-200 text-gray-400 hover:text-gray-600 bg-white transition-all active:bg-gray-100"
             title="Zoom out">
-            <ZoomOut size={12} />
+            <ZoomOut size={14} />
           </button>
           <button onClick={() => setZoom(1)}
-            className="text-[10px] font-bold text-gray-500 hover:text-gray-700 px-1.5 py-1 rounded-lg border border-gray-200 bg-white min-w-[40px] text-center transition-all"
+            className="text-[11px] font-bold text-gray-500 hover:text-gray-700 px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white min-w-[48px] text-center transition-all active:bg-gray-100"
             title="Reset zoom">
             {Math.round(zoom * 100)}%
           </button>
           <button onClick={() => setZoom(z => Math.min(MAX_ZOOM, +(z + 0.15).toFixed(2)))}
-            className="p-1.5 rounded-lg border border-gray-200 text-gray-400 hover:text-gray-600 bg-white transition-all"
+            className="p-2 rounded-lg border border-gray-200 text-gray-400 hover:text-gray-600 bg-white transition-all active:bg-gray-100"
             title="Zoom in">
-            <ZoomIn size={12} />
+            <ZoomIn size={14} />
           </button>
         </div>
 
@@ -549,19 +549,20 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
                     {isSelected && el && (
                       <div
                         className="absolute z-20 flex items-center bg-gray-900 rounded-lg shadow-xl overflow-hidden"
-                        style={{ top: -28, left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}
+                        style={{ top: -44, left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}
                         onMouseDown={e => e.stopPropagation()}
+                        onTouchStart={e => e.stopPropagation()}
                       >
                         {el.type === 'stall' && (
                           <button onClick={rotateSelected}
-                            className="flex items-center gap-1 text-white hover:text-blue-300 px-2 py-1 border-r border-gray-700 transition-colors">
-                            <RotateCw size={10} />
-                            <span className="text-[9px]">{el.facing}</span>
+                            className="flex items-center gap-1.5 text-white hover:text-blue-300 px-3 py-2 border-r border-gray-700 transition-colors active:bg-gray-800">
+                            <RotateCw size={14} />
+                            <span className="text-[11px] font-medium">{el.facing}</span>
                           </button>
                         )}
                         <button onClick={deleteSelected}
-                          className="text-white hover:text-red-300 px-2 py-1 transition-colors">
-                          <Trash2 size={10} />
+                          className="text-white hover:text-red-300 px-3 py-2 transition-colors active:bg-gray-800">
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     )}
