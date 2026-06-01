@@ -437,7 +437,7 @@ export function Dashboard() {
             {[
               { icon: MapPin, label: "Location\nHunting", color: "#14b8a6", bg: "bg-teal-50", path: null },
               { icon: CheckSquare, label: "Location\nFinalisation", color: "#f59e0b", bg: "bg-amber-50", path: '/location-finalization' },
-              { icon: Receipt, label: "Farmer\nBilling", color: "#e11d48", bg: "bg-rose-50", path: '/farmer-billing' },
+              // { icon: Receipt, label: "Farmer\nBilling", color: "#e11d48", bg: "bg-rose-50", path: '/farmer-billing' },
             ].map((item, i) => (
               <button 
                 key={i} 

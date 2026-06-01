@@ -11,7 +11,7 @@ import { AppModule } from '../types';
 const NAV_ITEMS: { label: string; path: string; icon: React.ElementType; module: AppModule | null }[] = [
   { label: 'Dashboard', path: '/', icon: LayoutDashboard, module: null },
   { label: 'Location Finalization', path: '/location-finalization', icon: CheckSquare, module: 'Location Finalization' },
-  { label: 'Farmer Billing', path: '/farmer-billing', icon: Receipt, module: 'Farmer Billing' },
+  // { label: 'Farmer Billing', path: '/farmer-billing', icon: Receipt, module: 'Farmer Billing' },
 ];
 
 function userColor(id: string): string {
