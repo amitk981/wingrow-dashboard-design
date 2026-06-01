@@ -437,7 +437,7 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
     <div className="flex flex-col h-full bg-white select-none text-sm">
 
       {/* ── Top toolbar ── */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100 flex-shrink-0 bg-gray-50">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100 flex-shrink-0 bg-gray-50 overflow-x-auto scrollbar-none [&>*]:flex-shrink-0" style={{ scrollbarWidth: 'none' }}>
         {/* Size preset */}
         <div className="flex items-center bg-white border border-gray-200 rounded-lg p-0.5 gap-0.5">
           {GRID_PRESETS.map((p, i) => (
@@ -599,16 +599,6 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
 
       {/* ── Canvas — zoomable & scrollable grid area ── */}
       <div className="relative flex-1 flex overflow-hidden">
-        
-      {/* Floating Done Button */}
-      {(activeTool || erasing) && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
-          <button onClick={() => { setActiveTool(null); setErasing(false); vibrate(10); }}
-            className="flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-full font-bold shadow-2xl hover:bg-gray-800 transition-all active:scale-95">
-            <Check size={18} className="text-green-400" /> Done
-          </button>
-        </div>
-      )}
 
       <div
         ref={canvasContainerRef}
