@@ -172,6 +172,7 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
   const [dragSrc, setDragSrc] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
+  const lastTouchTime = useRef(0);
 
   const { cols, rows } = GRID_PRESETS[presetIdx];
   const canvasContainerRef = useRef<HTMLDivElement>(null);
@@ -323,19 +324,17 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
       updateGrid(next); setSelectedKey(null); return;
     }
     if (!activeTool) return;
-    
-    const existing = grid[k];
-    if (existing && existing.type === activeTool.type && existing.catId === activeTool.catId) {
-      vibrate(20);
-      updateGrid({ ...grid, [k]: { ...existing, facing: nextFacing(existing.facing) } });
-    } else {
-      if (!existing) vibrate(10);
-      updateGrid({ ...grid, [k]: { type: activeTool.type, catId: activeTool.catId, facing: 'S' } });
-    }
+    if (!grid[k] || grid[k].type !== activeTool.type || grid[k].catId !== activeTool.catId) vibrate(10);
+    updateGrid({ ...grid, [k]: { type: activeTool.type, catId: activeTool.catId, facing: 'S' } });
     setSelectedKey(null);
   }, [activeTool, erasing, grid, updateGrid]);
 
   const handleCellMouseDown = (r: number, c: number, e: React.MouseEvent | React.TouchEvent) => {
+    if (e.type === 'touchstart') {
+      lastTouchTime.current = Date.now();
+    } else if (e.type === 'mousedown' && Date.now() - lastTouchTime.current < 1000) {
+      return; // Ignore ghost mouse click
+    }
     e.preventDefault();
     const k = cellKey(r, c);
     if (!activeTool && !erasing) {
