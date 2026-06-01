@@ -329,9 +329,7 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
             <button onClick={() => { setActiveTool(null); setErasing(false); }}
               className="text-gray-400 hover:text-gray-600 ml-0.5 leading-none text-xs">×</button>
           </div>
-        ) : (
-
-        )}
+        ) : null}
 
         <div className="ml-auto text-[11px] text-gray-400 hidden sm:block">
           <span className="font-bold text-gray-700">{totalStalls}</span> stalls · {cols}×{rows}
