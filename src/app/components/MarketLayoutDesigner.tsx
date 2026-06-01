@@ -84,27 +84,49 @@ function hexToRgba(hex: string, a: number) {
 
 function StallSvg({ color, facing, no, size }: { color: string; facing: Facing; no: number; size: number }) {
   const p = 2, w = size - p * 2, h = size - p * 2;
-  const awningH = Math.round(h * 0.28);
-  const archLen = Math.round((facing === 'N' || facing === 'S' ? w : h) * 0.50);
-  const archD = Math.round((facing === 'N' || facing === 'S' ? h : w) * 0.20);
   const cx = p + w / 2, cy = p + h / 2;
-  const archRect = (() => {
+  
+  // Front counter strip (darker area)
+  const cd = Math.max(4, Math.round(Math.min(w, h) * 0.25));
+  const counterRect = (() => {
     switch (facing) {
-      case 'N': return { x: cx - archLen / 2, y: p,             width: archLen, height: archD };
-      case 'S': return { x: cx - archLen / 2, y: p + h - archD, width: archLen, height: archD };
-      case 'E': return { x: p + w - archD,    y: cy - archLen / 2, width: archD, height: archLen };
-      case 'W': return { x: p,                y: cy - archLen / 2, width: archD, height: archLen };
+      case 'N': return { x: p, y: p, width: w, height: cd };
+      case 'S': return { x: p, y: p + h - cd, width: w, height: cd };
+      case 'E': return { x: p + w - cd, y: p, width: cd, height: h };
+      case 'W': return { x: p, y: p, width: cd, height: h };
     }
   })();
+
+  // Directional Arrow
+  const aw = Math.max(3, Math.round(w * 0.12)); // arrow half-width
+  const al = Math.max(4, Math.round(h * 0.20)); // arrow length
+  const arrowPoints = (() => {
+    switch (facing) {
+      case 'N': return `${cx},${p+2} ${cx-aw},${p+2+al} ${cx+aw},${p+2+al}`;
+      case 'S': return `${cx},${p+h-2} ${cx-aw},${p+h-2-al} ${cx+aw},${p+h-2-al}`;
+      case 'E': return `${p+w-2},${cy} ${p+w-2-al},${cy-aw} ${p+w-2-al},${cy+aw}`;
+      case 'W': return `${p+2},${cy} ${p+2+al},${cy-aw} ${p+2+al},${cy+aw}`;
+    }
+  })();
+
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: 'block' }}>
       <rect x={p} y={p} width={w} height={h} rx={3} fill={color} opacity={0.88} />
-      <rect x={p} y={p} width={w} height={awningH} rx={3} fill={hexToRgba('#000', 0.22)} />
-      <rect x={archRect.x} y={archRect.y} width={archRect.width} height={archRect.height}
-        rx={Math.min(archRect.width, archRect.height) / 2} fill="white" opacity={0.78} />
-      <text x={cx} y={cy + 2} textAnchor="middle" dominantBaseline="middle"
-        fontSize={Math.max(8, Math.round(size * 0.22))} fill="white" fontWeight="700"
-        fontFamily="system-ui,-apple-system,sans-serif">{no}</text>
+      
+      {/* Front counter (darker strip) */}
+      <rect x={counterRect.x} y={counterRect.y} width={counterRect.width} height={counterRect.height} 
+        rx={3} fill={hexToRgba('#000', 0.25)} />
+        
+      {/* Direction Arrow */}
+      <polygon points={arrowPoints} fill="white" opacity={0.95} />
+
+      {/* Stall Number (always upright) */}
+      <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="middle"
+        fontSize={Math.max(9, Math.round(size * 0.3))} fill="white" fontWeight="800"
+        fontFamily="system-ui,-apple-system,sans-serif"
+        stroke="rgba(0,0,0,0.35)" strokeWidth={Math.max(1, Math.round(size * 0.05))} strokeLinejoin="round" paintOrder="stroke">
+        {no}
+      </text>
     </svg>
   );
 }
