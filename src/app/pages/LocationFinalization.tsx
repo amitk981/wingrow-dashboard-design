@@ -174,7 +174,7 @@ export function LocationFinalization() {
                           : rowOverdue ? 'bg-red-50/40 hover:bg-red-50/60' : 'hover:bg-gray-50'
                       }`}
                     >
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 whitespace-nowrap">
                         <span className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border ${rowOverdue ? 'border-red-300 text-red-600 bg-red-50' : 'border-rose-200 text-rose-600 bg-rose-50'}`}>{f.id}</span>
                         <p className="text-[10px] text-gray-400 mt-1">{format(f.createdAt, 'MMM d, yyyy')}</p>
                       </td>
@@ -190,7 +190,7 @@ export function LocationFinalization() {
                       <td className="px-4 py-3">
                         <span className="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-medium">{f.ownershipType}</span>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 whitespace-nowrap">
                         <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${DOC_STYLE[f.docType]}`}>{f.docType}</span>
                       </td>
                       <td className="px-4 py-3 min-w-[120px]">
