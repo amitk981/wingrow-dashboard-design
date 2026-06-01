@@ -330,7 +330,7 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
               className="text-gray-400 hover:text-gray-600 ml-0.5 leading-none text-xs">×</button>
           </div>
         ) : (
-          <span className="text-[11px] text-gray-400 ml-1 hidden sm:block">← pick a tool to paint</span>
+
         )}
 
         <div className="ml-auto text-[11px] text-gray-400 hidden sm:block">
