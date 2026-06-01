@@ -395,15 +395,13 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
         commitGrid(next);
       }
     } else if (dragSrc && dragOver === dragSrc) {
-      // Didn't move — treat as a select tap
-      if (selectedKey === dragSrc) {
-        // Tapped while already selected -> Rotate!
-        vibrate(20);
-        const el = grid[dragSrc];
-        if (el) commitGrid({ ...grid, [dragSrc]: { ...el, facing: nextFacing(el.facing) } });
-      } else {
-        setSelectedKey(dragSrc);
+      // Didn't move — treat as a select tap & rotate
+      vibrate(20);
+      const el = grid[dragSrc];
+      if (el) {
+        commitGrid({ ...grid, [dragSrc]: { ...el, facing: nextFacing(el.facing) } });
       }
+      setSelectedKey(dragSrc);
     }
     
     if (isPainting) {
