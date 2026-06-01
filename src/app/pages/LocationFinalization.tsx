@@ -302,17 +302,17 @@ export function LocationFinalization() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 min-w-[160px]">
+                      <td className="px-4 py-3 min-w-[150px]">
                         {f.status === 'Approved' ? (
                           <button
                             onClick={() => setOnboardingTarget(f)}
-                            className="w-[155px] h-[42px] inline-flex items-center justify-center text-[11px] font-extrabold bg-[#ff1463] hover:bg-[#e60d55] text-white rounded-[12px] transition-colors uppercase tracking-wide whitespace-nowrap"
+                            className="w-[135px] h-[34px] inline-flex items-center justify-center text-[9px] font-extrabold bg-[#ff1463] hover:bg-[#e60d55] text-white rounded-lg transition-colors uppercase tracking-wider whitespace-nowrap shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
                           >
                             PUSH TO ONBOARDING
                           </button>
                         ) : f.status === 'Sent to Onboarding' ? (
-                          <div className="w-[155px] h-[42px] inline-flex bg-[#f8fafc] rounded-[12px] items-center justify-center text-center">
-                            <p className="text-[10px] font-extrabold text-[#8ba3b8] uppercase leading-[1.3] tracking-wide">
+                          <div className="w-[135px] h-[34px] inline-flex bg-[#f8fafc] rounded-lg items-center justify-center text-center shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                            <p className="text-[9px] font-extrabold text-[#94a3b8] uppercase leading-[1.15] tracking-wider">
                               PUSHED TO<br />ONBOARDING
                             </p>
                           </div>
