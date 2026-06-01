@@ -254,7 +254,7 @@ export function LocationFinalization() {
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   {['Market ID', 'Pin Code', 'Market Name & Address', 'Category', 'Households', 'Ownership', 'Docs', 'Day / Time', 'Outlets', 'Finalized Rent', 'Status', 'Primary Action'].map(h => (
-                    <th key={h} className="text-left px-4 py-3 text-[10px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{h}</th>
+                    <th key={h} className={`px-4 py-3 text-[10px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap ${['Status', 'Primary Action'].includes(h) ? 'text-center' : 'text-left'}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -299,7 +299,7 @@ export function LocationFinalization() {
                       <td className="px-4 py-3 text-xs text-gray-600 text-right">{f.numberOfOutlets}</td>
                       <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap">{f.finalizedRent}</td>
                       <td className="px-4 py-3">
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col items-center justify-center gap-1 text-center">
                           <span className="inline-block text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 whitespace-nowrap">
                             {f.status === 'Sent to Onboarding' ? 'COMPLETED' : f.status.toUpperCase()}
                           </span>
