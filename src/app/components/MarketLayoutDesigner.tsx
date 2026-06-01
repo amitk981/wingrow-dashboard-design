@@ -265,9 +265,10 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
     if (e.touches.length !== 1) return;
     const touch = e.touches[0];
     const el = document.elementFromPoint(touch.clientX, touch.clientY);
-    if (!el) return;
-    const rStr = el.getAttribute('data-r');
-    const cStr = el.getAttribute('data-c');
+    const cellEl = el?.closest('[data-r]');
+    if (!cellEl) return;
+    const rStr = cellEl.getAttribute('data-r');
+    const cStr = cellEl.getAttribute('data-c');
     if (rStr != null && cStr != null) {
       handleCellMouseEnter(parseInt(rStr, 10), parseInt(cStr, 10));
     }
