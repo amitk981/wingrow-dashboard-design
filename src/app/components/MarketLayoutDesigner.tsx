@@ -563,19 +563,22 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
               const isActive = activeTool?.type === 'stall' && activeTool.catId === cat.id;
               const count = stallCounts[cat.id];
               return (
-                <button key={cat.id} onClick={() => selectStallTool(cat.id)}
-                  className="flex-shrink-0 w-16 flex flex-col items-center gap-0.5 py-1.5 rounded-xl transition-all border"
+                <button key={cat.id} onClick={() => { selectStallTool(cat.id); vibrate(10); }}
+                  className={`flex-shrink-0 flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full border transition-all relative ${isActive ? 'shadow-md scale-105 z-10' : 'shadow-sm hover:bg-gray-50'}`}
                   style={isActive
-                    ? { backgroundColor: cat.light, borderColor: cat.color, outline: `2px solid ${cat.color}`, outlineOffset: '-1px' }
-                    : { backgroundColor: 'white', borderColor: '#e5e7eb' }}>
-                  <span className="w-6 h-6 rounded flex items-center justify-center text-white text-[8px] font-bold"
-                    style={{ backgroundColor: cat.color }}>S</span>
-                  <span className="text-[9px] font-medium w-full text-center truncate px-1" style={{ color: isActive ? cat.color : '#6b7280' }}>
-                    {cat.label}
+                    ? { backgroundColor: cat.color, borderColor: cat.color, color: 'white' }
+                    : { backgroundColor: 'white', borderColor: '#e5e7eb', color: '#4b5563' }}>
+                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm"
+                    style={isActive ? { backgroundColor: 'white', color: cat.color } : { backgroundColor: cat.light, color: cat.color }}>
+                    S
                   </span>
+                  <span className="text-[11px] font-bold whitespace-nowrap">{cat.label}</span>
+                  
                   {count > 0 && (
-                    <span className="text-[9px] font-bold px-1 rounded-full"
-                      style={{ backgroundColor: cat.light, color: cat.color }}>{count}</span>
+                    <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[9px] font-extrabold shadow-sm border-2 border-white"
+                      style={isActive ? { backgroundColor: 'white', color: cat.color } : { backgroundColor: cat.color, color: 'white' }}>
+                      {count}
+                    </span>
                   )}
                 </button>
               );
@@ -588,18 +591,16 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
             {INFRA_ITEMS.map(infra => {
               const isActive = activeTool?.type === infra.id;
               return (
-                <button key={infra.id} onClick={() => selectInfraTool(infra.id)}
-                  className="flex-shrink-0 w-16 flex flex-col items-center gap-0.5 py-1.5 rounded-xl transition-all border"
+                <button key={infra.id} onClick={() => { selectInfraTool(infra.id); vibrate(10); }}
+                  className={`flex-shrink-0 flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full border transition-all ${isActive ? 'shadow-md scale-105 z-10' : 'shadow-sm hover:bg-gray-50'}`}
                   style={isActive
-                    ? { backgroundColor: infra.bg, borderColor: infra.color, outline: `2px solid ${infra.color}`, outlineOffset: '-1px' }
-                    : { backgroundColor: 'white', borderColor: '#e5e7eb' }}>
-                  <span className="w-6 h-6 rounded flex items-center justify-center"
-                    style={{ backgroundColor: infra.bg }}>
-                    <infra.Icon size={14} color={infra.color} strokeWidth={2} />
+                    ? { backgroundColor: infra.color, borderColor: infra.color, color: 'white' }
+                    : { backgroundColor: 'white', borderColor: '#e5e7eb', color: '#4b5563' }}>
+                  <span className="w-6 h-6 rounded-full flex items-center justify-center shadow-sm"
+                    style={isActive ? { backgroundColor: 'white' } : { backgroundColor: infra.bg }}>
+                    <infra.Icon size={14} color={isActive ? infra.color : infra.color} strokeWidth={2.5} />
                   </span>
-                  <span className="text-[9px] font-medium w-full text-center truncate px-1" style={{ color: isActive ? infra.color : '#6b7280' }}>
-                    {infra.label}
-                  </span>
+                  <span className="text-[11px] font-bold whitespace-nowrap">{infra.label}</span>
                 </button>
               );
             })}
