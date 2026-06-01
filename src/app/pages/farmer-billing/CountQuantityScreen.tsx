@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { ArrowLeft, Minus, Plus, ShoppingCart, Hash } from "lucide-react";
-import { BillingCtx, CartItem, PRIMARY, pricingLabel, formatRupee } from "./types";
+import { BillingCtx } from "./types";
+import {
+  PRIMARY, PRIMARY_TINT,
+  SUCCESS, SUCCESS_TINT,
+  INFO, INFO_TINT,
+  SURFACE_MUTED, BORDER,
+  CARD_SHADOW, ACCENT_SHADOW,
+} from "./tokens";
+
+const CARD_SHADOW_LOCAL = CARD_SHADOW;
+const CELL_BG    = SURFACE_MUTED;
 
 interface Props { ctx: BillingCtx }
 
@@ -30,7 +40,7 @@ export function CountQuantityScreen({ ctx }: Props) {
         <button
           onClick={() => ctx.goTo("product-select")}
           className="flex items-center justify-center rounded-xl"
-          style={{ width: 38, height: 38, background: "#FDE8EF" }}
+          style={{ width: 38, height: 38, background: PRIMARY_TINT }}
         >
           <ArrowLeft size={18} color={PRIMARY} />
         </button>
@@ -40,28 +50,36 @@ export function CountQuantityScreen({ ctx }: Props) {
         </div>
         <div
           className="flex items-center justify-center rounded-xl text-2xl"
-          style={{ width: 44, height: 44, background: "#F9FAFB" }}
+          style={{ width: 44, height: 44, background: CELL_BG }}
         >
           {sku.emoji}
         </div>
       </div>
 
       {/* Product Info Card */}
-      <div className="bg-white rounded-2xl p-4" style={{ boxShadow: "0 1px 6px rgba(0,0,0,0.07)" }}>
+      <div className="bg-white rounded-2xl p-4" style={{ boxShadow: CARD_SHADOW_LOCAL }}>
         <div className="flex items-start justify-between">
           <div>
             <p className="font-bold text-gray-900 text-xl leading-tight mb-1">{sku.name}</p>
             <div className="flex items-center gap-2">
               <span
                 className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-                style={{ background: "#F0FDF4", color: "#10B981" }}
+                style={{ background: SUCCESS_TINT, color: SUCCESS }}
               >
                 <Hash size={10} /> Count-Based
               </span>
-              <span className="text-xs text-gray-400">{sku.category}</span>
+              <span
+                className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                style={{ background: CELL_BG, color: PRIMARY, fontSize: 11 }}
+              >
+                {sku.category}
+              </span>
             </div>
           </div>
-          <div className="text-right">
+          <div
+            className="rounded-xl p-2.5 text-right"
+            style={{ background: CELL_BG }}
+          >
             <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-0.5" style={{ fontSize: 9 }}>RATE</p>
             <p className="font-bold text-lg" style={{ color: PRIMARY }}>₹{sku.rate}</p>
             <p className="text-xs text-gray-400">{pricingLabel(sku)}</p>
@@ -70,18 +88,19 @@ export function CountQuantityScreen({ ctx }: Props) {
       </div>
 
       {/* Quantity Selector */}
-      <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 1px 6px rgba(0,0,0,0.07)" }}>
+      <div className="bg-white rounded-2xl p-6" style={{ boxShadow: CARD_SHADOW_LOCAL }}>
         <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 text-center mb-4" style={{ fontSize: 10 }}>
           NUMBER OF {sku.unit.toUpperCase()}S
         </p>
         <div className="flex items-center justify-center gap-6">
           <button
             onClick={() => setQty((q) => Math.max(1, q - 1))}
-            className="flex items-center justify-center rounded-2xl shadow-sm"
+            className="flex items-center justify-center rounded-2xl"
             style={{
               width: 52, height: 52,
-              background: qty === 1 ? "#F9FAFB" : "#FDE8EF",
-              color: qty === 1 ? "#D1D5DB" : PRIMARY,
+              background: qty === 1 ? CELL_BG : PRIMARY_TINT,
+              color: qty === 1 ? "#E8A0B4" : PRIMARY,
+              border: `1.5px solid ${qty === 1 ? BORDER : PRIMARY_TINT}`,
             }}
           >
             <Minus size={22} />
@@ -92,8 +111,8 @@ export function CountQuantityScreen({ ctx }: Props) {
           </div>
           <button
             onClick={() => setQty((q) => q + 1)}
-            className="flex items-center justify-center rounded-2xl shadow-sm"
-            style={{ width: 52, height: 52, background: "#FDE8EF", color: PRIMARY }}
+            className="flex items-center justify-center rounded-2xl"
+            style={{ width: 52, height: 52, background: PRIMARY_TINT, color: PRIMARY }}
           >
             <Plus size={22} />
           </button>
@@ -107,8 +126,9 @@ export function CountQuantityScreen({ ctx }: Props) {
               onClick={() => setQty(n)}
               className="px-3 py-1.5 rounded-full text-xs font-semibold"
               style={{
-                background: qty === n ? PRIMARY : "#F9FAFB",
-                color: qty === n ? "white" : "#6B7280",
+                background: qty === n ? PRIMARY : CELL_BG,
+                color: qty === n ? "white" : PRIMARY,
+                border: `1.5px solid ${qty === n ? PRIMARY : BORDER}`,
               }}
             >
               {n}
@@ -120,10 +140,10 @@ export function CountQuantityScreen({ ctx }: Props) {
       {/* Line Total */}
       <div
         className="rounded-2xl p-4 flex items-center justify-between"
-        style={{ background: "#FDE8EF" }}
+        style={{ background: CELL_BG, border: `1.5px solid ${BORDER}` }}
       >
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest mb-0.5" style={{ fontSize: 9, color: PRIMARY }}>LINE TOTAL</p>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-0.5" style={{ fontSize: 9, color: "#9CA3AF" }}>LINE TOTAL</p>
           <p className="text-xs text-gray-500">
             {qty} {sku.unit}{qty > 1 ? "s" : ""} × ₹{sku.rate}{pricingLabel(sku)}
           </p>
@@ -135,7 +155,7 @@ export function CountQuantityScreen({ ctx }: Props) {
       <button
         onClick={handleAddToCart}
         className="w-full py-4 rounded-2xl text-white font-bold flex items-center justify-center gap-3 shadow-md"
-        style={{ background: PRIMARY }}
+        style={{ background: PRIMARY, boxShadow: ACCENT_SHADOW }}
       >
         <ShoppingCart size={19} />
         Add to Cart — {formatRupee(lineTotal)}
