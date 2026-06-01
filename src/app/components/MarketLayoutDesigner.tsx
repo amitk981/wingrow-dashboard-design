@@ -491,7 +491,7 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
-        <div style={{ userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '100%', minHeight: '100%' }}>
+        <div style={{ userSelect: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: '100%', minHeight: '100%', padding: '24px' }}>
           {Array.from({ length: rows }, (_, r) => (
             <div key={r} className="flex">
               {Array.from({ length: cols }, (_, c) => {
