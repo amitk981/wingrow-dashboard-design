@@ -615,11 +615,11 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange, isFullScreen 
               const isActive = activeTool?.type === infra.id;
               return (
                 <button key={infra.id} onClick={() => { selectInfraTool(infra.id); vibrate(10); }}
-                  className={`flex-shrink-0 flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full border transition-all ${isActive ? 'shadow-md scale-105 z-10' : 'shadow-sm hover:bg-gray-50'}`}
+                  className={`flex-shrink-0 flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full border transition-all ${isActive ? 'scale-105 z-10' : 'hover:bg-gray-50'}`}
                   style={isActive
                     ? { backgroundColor: infra.color, borderColor: infra.color, color: 'white' }
                     : { backgroundColor: 'white', borderColor: '#e5e7eb', color: '#4b5563' }}>
-                  <span className="w-6 h-6 rounded-full flex items-center justify-center shadow-sm"
+                  <span className="w-6 h-6 rounded-full flex items-center justify-center"
                     style={isActive ? { backgroundColor: 'white' } : { backgroundColor: infra.bg }}>
                     <infra.Icon size={14} color={isActive ? infra.color : infra.color} strokeWidth={2.5} />
                   </span>
