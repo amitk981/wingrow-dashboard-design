@@ -758,7 +758,6 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange, isFullScreen 
                         {el.type === 'stall' && (
                           <button onClick={rotateSelected}
                             className="flex items-center gap-1.5 text-white hover:text-blue-300 px-3 py-2 border-r border-gray-700 transition-colors active:bg-gray-800">
-                            <RotateCw size={14} />
                             <span className="text-[11px] font-medium">{cat?.label || 'Stall'}</span>
                           </button>
                         )}
