@@ -443,13 +443,18 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange, isFullScreen 
         commitGrid(next);
       }
     } else if (dragSrc && dragOver === dragSrc) {
-      // Didn't move — treat as a select tap & rotate
+      // Didn't move — treat as a select tap
       vibrate(20);
       const el = grid[dragSrc];
       if (el) {
-        commitGrid({ ...grid, [dragSrc]: { ...el, facing: nextFacing(el.facing) } });
+        if (selectedKey === dragSrc) {
+          // Already selected, rotate it
+          commitGrid({ ...grid, [dragSrc]: { ...el, facing: nextFacing(el.facing) } });
+        } else {
+          // First tap, just select it
+          setSelectedKey(dragSrc);
+        }
       }
-      setSelectedKey(dragSrc);
     }
     
     if (isPainting) {
