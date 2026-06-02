@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Check, ChevronRight, ArrowRight, ArrowLeft, Plus, Trash2, Info, Bold, Italic, Underline, List, ListOrdered, Link, RemoveFormatting } from 'lucide-react';
+import { X, Check, ChevronRight, ArrowRight, ArrowLeft, Plus, Trash2, Info, Bold, Italic, Underline, List, ListOrdered, Link, RemoveFormatting, Maximize2, Minimize2 } from 'lucide-react';
 import { MarketLayoutDesigner } from './MarketLayoutDesigner';
 import { Finalization } from '../types';
 
@@ -114,10 +114,20 @@ function InfoCard({ f }: { f: Finalization }) {
 
 // ─── Step 1: Layout ────────────────────────────────────────────────────────────
 
-function StepLayout({ data, onChange }: { data: OnboardingData; onChange: (d: Partial<OnboardingData>) => void }) {
+function StepLayout({ data, onChange, isFullScreen, onToggleFullScreen }: {
+  data: OnboardingData;
+  onChange: (d: Partial<OnboardingData>) => void;
+  isFullScreen: boolean;
+  onToggleFullScreen: () => void;
+}) {
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      <MarketLayoutDesigner initialGrid={data.grid} onChange={grid => onChange({ grid })} />
+      <MarketLayoutDesigner
+        initialGrid={data.grid}
+        onChange={grid => onChange({ grid })}
+        isFullScreen={isFullScreen}
+        onToggleFullScreen={onToggleFullScreen}
+      />
     </div>
   );
 }
@@ -361,6 +371,15 @@ export function OnboardingDrawer({ finalization, onClose, onSubmit }: Onboarding
   const [step, setStep] = useState(1);
   const [data, setData] = useState<OnboardingData>({ ...DEFAULT_DATA });
   const [saving, setSaving] = useState(false);
+  const [isLayoutFullScreen, setIsLayoutFullScreen] = useState(false);
+
+  const toggleLayoutFullScreen = () => setIsLayoutFullScreen(v => !v);
+
+  // Exit fullscreen when leaving step 1
+  const handleSetStep = (s: number) => {
+    if (s !== 1) setIsLayoutFullScreen(false);
+    setStep(s);
+  };
 
   const update = (partial: Partial<OnboardingData>) => setData(prev => ({ ...prev, ...partial }));
 
@@ -371,7 +390,7 @@ export function OnboardingDrawer({ finalization, onClose, onSubmit }: Onboarding
   };
 
   const handleNext = () => {
-    if (step < 4) setStep(s => s + 1);
+    if (step < 4) handleSetStep(step + 1);
     else { setSaving(true); setTimeout(() => { onSubmit?.(data); onClose(); }, 800); }
   };
 
@@ -389,71 +408,77 @@ export function OnboardingDrawer({ finalization, onClose, onSubmit }: Onboarding
       <div className="fixed z-50 bg-white shadow-2xl flex flex-col inset-0 md:inset-y-0 md:left-auto md:right-0 md:w-[min(520px,95vw)]">
 
         {/* ── Header ── */}
-        <div className="flex items-start justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0 bg-white">
-          <div>
-            <div className="flex items-center gap-2 mb-0.5">
-              <h2 className="text-base font-bold text-gray-900">Market Onboarding</h2>
-              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-gray-300 text-gray-600 tracking-widest">
-                DRAFT
-              </span>
+        {!(isLayoutFullScreen && step === 1) && (
+          <div className="flex items-start justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0 bg-white">
+            <div>
+              <div className="flex items-center gap-2 mb-0.5">
+                <h2 className="text-base font-bold text-gray-900">Market Onboarding</h2>
+                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-gray-300 text-gray-600 tracking-widest">
+                  DRAFT
+                </span>
+              </div>
+              <p className="text-[11px] text-gray-400">
+                Auto ID: generated after save &nbsp;·&nbsp; Last saved: 2 mins ago
+              </p>
             </div>
-            <p className="text-[11px] text-gray-400">
-              Auto ID: generated after save &nbsp;·&nbsp; Last saved: 2 mins ago
-            </p>
+            <button onClick={onClose}
+              className="w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0 mt-0.5">
+              <X size={17} />
+            </button>
           </div>
-          <button onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0 mt-0.5">
-            <X size={17} />
-          </button>
-        </div>
+        )}
 
 
         {/* ── Step bar ── */}
-        <StepBar current={step} onStep={setStep} />
+        {!(isLayoutFullScreen && step === 1) && (
+          <StepBar current={step} onStep={handleSetStep} />
+        )}
 
         {/* ── Step content ── */}
         <div className={`flex-1 min-h-0 ${step === 1 ? 'flex flex-col' : 'overflow-y-auto'}`}>
-          {step === 1 && <StepLayout data={data} onChange={update} />}
+          {step === 1 && <StepLayout data={data} onChange={update} isFullScreen={isLayoutFullScreen} onToggleFullScreen={toggleLayoutFullScreen} />}
           {step === 2 && <StepOutletConfig data={data} onChange={update} />}
           {step === 3 && <StepOffers data={data} onChange={update} />}
           {step === 4 && <StepAdditionalCosts data={data} onChange={update} />}
         </div>
 
         {/* ── Footer ── */}
-        <div className="flex-shrink-0 border-t border-gray-200 bg-white px-4 py-4">
-          <div className="flex items-center gap-2">
-            {/* Back (steps 2-4) or Cancel (step 1) */}
-            {step > 1 ? (
-              <button onClick={() => setStep(s => s - 1)}
-                className="flex flex-1 items-center justify-center gap-1.5 py-3 border border-gray-200 rounded-2xl text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap">
-                <ArrowLeft size={14} /> Back
-              </button>
-            ) : (
-              <button onClick={onClose}
+        {!(isLayoutFullScreen && step === 1) && (
+          <div className="flex-shrink-0 border-t border-gray-200 bg-white px-4 py-4">
+            <div className="flex items-center gap-2">
+              {/* Back (steps 2-4) or Cancel (step 1) */}
+              {step > 1 ? (
+                <button onClick={() => handleSetStep(step - 1)}
+                  className="flex flex-1 items-center justify-center gap-1.5 py-3 border border-gray-200 rounded-2xl text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap">
+                  <ArrowLeft size={14} /> Back
+                </button>
+              ) : (
+                <button onClick={onClose}
+                  className="flex flex-1 items-center justify-center py-3 border border-gray-200 rounded-2xl text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap">
+                  Cancel
+                </button>
+              )}
+
+              {/* Save Draft */}
+              <button
                 className="flex flex-1 items-center justify-center py-3 border border-gray-200 rounded-2xl text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap">
-                Cancel
+                Save Draft
               </button>
-            )}
 
-            {/* Save Draft */}
-            <button
-              className="flex flex-1 items-center justify-center py-3 border border-gray-200 rounded-2xl text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap">
-              Save Draft
-            </button>
-
-            {/* Continue / Finish */}
-            <button onClick={handleNext} disabled={saving}
-              className="flex-[1.8] flex items-center justify-center gap-1.5 bg-[#ff1463] hover:bg-[#e60d55] disabled:bg-[#ff1463]/50 text-white rounded-2xl py-3 px-3 transition-colors min-w-0">
-              <span className="text-[13px] font-extrabold whitespace-nowrap overflow-hidden text-ellipsis">
-                {saving ? 'Saving…' : nextLabel}
-              </span>
-              {saving
-                ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin flex-shrink-0" />
-                : <ArrowRight size={15} className="flex-shrink-0" strokeWidth={2.5} />
-              }
-            </button>
+              {/* Continue / Finish */}
+              <button onClick={handleNext} disabled={saving}
+                className="flex-[1.8] flex items-center justify-center gap-1.5 bg-[#ff1463] hover:bg-[#e60d55] disabled:bg-[#ff1463]/50 text-white rounded-2xl py-3 px-3 transition-colors min-w-0">
+                <span className="text-[13px] font-extrabold whitespace-nowrap overflow-hidden text-ellipsis">
+                  {saving ? 'Saving…' : nextLabel}
+                </span>
+                {saving
+                  ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin flex-shrink-0" />
+                  : <ArrowRight size={15} className="flex-shrink-0" strokeWidth={2.5} />
+                }
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );

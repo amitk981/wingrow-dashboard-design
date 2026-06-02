@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { RotateCw, Trash2, Eraser, RefreshCw, Grid, ChevronDown, SeparatorHorizontal, Footprints, DoorOpen, SquareParking, Ban, Wrench, ZoomIn, ZoomOut, Undo, Redo, Check } from 'lucide-react';
+import { RotateCw, Trash2, Eraser, RefreshCw, Grid, ChevronDown, SeparatorHorizontal, Footprints, DoorOpen, SquareParking, Ban, Wrench, ZoomIn, ZoomOut, Undo, Redo, Check, Maximize2, Minimize2 } from 'lucide-react';
 
 const vibrate = (ms = 10) => {
   if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -150,11 +150,13 @@ function InfraSvg({ type, size }: { type: string; size: number }) {
 interface MarketLayoutDesignerProps {
   initialGrid?: GridMap;
   onChange?: (grid: GridMap) => void;
+  isFullScreen?: boolean;
+  onToggleFullScreen?: () => void;
 }
 
 type PaletteMode = 'stall' | 'infra' | 'erase';
 
-export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayoutDesignerProps) {
+export function MarketLayoutDesigner({ initialGrid = {}, onChange, isFullScreen = false, onToggleFullScreen }: MarketLayoutDesignerProps) {
   const [presetIdx, setPresetIdx] = useState(0);
   const [grid, setGrid] = useState<GridMap>(initialGrid);
   
@@ -173,6 +175,8 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
   const [dragOver, setDragOver] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const lastTouchTime = useRef(0);
+  const paintStartTime = useRef(0);
+  const paintOriginKey = useRef<string | null>(null);
 
   const { cols, rows } = GRID_PRESETS[presetIdx];
   const canvasContainerRef = useRef<HTMLDivElement>(null);
@@ -348,6 +352,8 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
       }
       return;
     }
+    paintStartTime.current = Date.now();
+    paintOriginKey.current = k;
     setIsPainting(true);
     paintCell(r, c);
   };
@@ -355,7 +361,13 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
   const handleCellMouseEnter = useCallback((r: number, c: number) => {
     const k = cellKey(r, c);
     if (dragSrc) { setDragOver(k); return; }
-    if (isPainting) paintCell(r, c);
+    if (isPainting) {
+      // Skip the origin cell (already painted on mousedown)
+      if (k === paintOriginKey.current) return;
+      // Skip quick enters right after mousedown to prevent accidental adjacent-cell painting
+      if (Date.now() - paintStartTime.current < 80) return;
+      paintCell(r, c);
+    }
   }, [dragSrc, isPainting, paintCell]);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
@@ -575,11 +587,11 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
               const count = stallCounts[cat.id];
               return (
                 <button key={cat.id} onClick={() => { selectStallTool(cat.id); vibrate(10); }}
-                  className={`flex-shrink-0 flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full border transition-all relative ${isActive ? 'shadow-md scale-105 z-10' : 'shadow-sm hover:bg-gray-50'}`}
+                  className={`flex-shrink-0 flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full border transition-all relative ${isActive ? 'scale-105 z-10' : 'hover:bg-gray-50'}`}
                   style={isActive
                     ? { backgroundColor: cat.color, borderColor: cat.color, color: 'white' }
                     : { backgroundColor: 'white', borderColor: '#e5e7eb', color: '#4b5563' }}>
-                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm"
+                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold"
                     style={isActive ? { backgroundColor: 'white', color: cat.color } : { backgroundColor: cat.light, color: cat.color }}>
                     S
                   </span>
@@ -633,6 +645,19 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange }: MarketLayou
 
       {/* ── Canvas — zoomable & scrollable grid area ── */}
       <div className="relative flex-1 flex overflow-hidden">
+
+      {/* Floating fullscreen toggle */}
+      {onToggleFullScreen && (
+        <button onClick={onToggleFullScreen}
+          className={`absolute top-2.5 right-2.5 z-20 p-2 rounded-lg border shadow-md transition-all ${
+            isFullScreen
+              ? 'bg-rose-500 border-rose-500 text-white hover:bg-rose-600'
+              : 'bg-white border-gray-200 text-gray-500 hover:text-gray-800 hover:border-gray-300 hover:shadow-lg'
+          }`}
+          title={isFullScreen ? 'Exit fullscreen' : 'Expand to fullscreen'}>
+          {isFullScreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+        </button>
+      )}
 
       <div
         ref={canvasContainerRef}
