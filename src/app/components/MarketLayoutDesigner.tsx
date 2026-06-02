@@ -383,7 +383,6 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange, isFullScreen 
         // Start drag-to-move
         setDragSrc(k);
         setDragOver(k);
-        setSelectedKey(null);
       } else {
         setSelectedKey(prev => prev === k ? null : k);
       }
@@ -441,6 +440,9 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange, isFullScreen 
         delete next[dragSrc];
         next[dragOver] = el;
         commitGrid(next);
+        if (selectedKey === dragSrc) {
+          setSelectedKey(dragOver);
+        }
       }
     } else if (dragSrc && dragOver === dragSrc) {
       // Didn't move — treat as a select tap
