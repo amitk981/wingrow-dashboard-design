@@ -174,6 +174,7 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange, isFullScreen 
   const [dragSrc, setDragSrc] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
+  const zoomPointRef = useRef<{ cx: number, cy: number, oldZoom: number, scrollLeft: number, scrollTop: number } | null>(null);
   const lastTouchTime = useRef(0);
   const paintStartTime = useRef(0);
   const paintOriginKey = useRef<string | null>(null);
@@ -203,9 +204,21 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange, isFullScreen 
     const el = canvasContainerRef.current;
     if (!el) return;
     const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const delta = e.deltaY > 0 ? -0.15 : 0.15;
-      setZoom(z => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, +(z + delta).toFixed(2))));
+      if (e.ctrlKey || e.metaKey || true) { // Always capture wheel for zoom in this view
+        e.preventDefault();
+        const rect = el.getBoundingClientRect();
+        const cx = e.clientX - rect.left;
+        const cy = e.clientY - rect.top;
+
+        setZoom(z => {
+          const delta = e.deltaY > 0 ? -0.15 : 0.15;
+          const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, +(z + delta).toFixed(2)));
+          if (newZoom !== z) {
+            zoomPointRef.current = { cx, cy, oldZoom: z, scrollLeft: el.scrollLeft, scrollTop: el.scrollTop };
+          }
+          return newZoom;
+        });
+      }
     };
     let lastDist: number | null = null;
     let lastCenter: { x: number, y: number } | null = null;
@@ -239,7 +252,17 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange, isFullScreen 
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
         );
-        setZoom(z => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, +(z * (dist / lastDist!)).toFixed(2))));
+        const rect = el.getBoundingClientRect();
+        const relativeCx = cx - rect.left;
+        const relativeCy = cy - rect.top;
+
+        setZoom(z => {
+          const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, +(z * (dist / lastDist!)).toFixed(2)));
+          if (newZoom !== z) {
+            zoomPointRef.current = { cx: relativeCx, cy: relativeCy, oldZoom: z, scrollLeft: el.scrollLeft, scrollTop: el.scrollTop };
+          }
+          return newZoom;
+        });
         lastDist = dist;
       }
     };
@@ -255,6 +278,20 @@ export function MarketLayoutDesigner({ initialGrid = {}, onChange, isFullScreen 
       el.removeEventListener('touchend', onTouchEnd);
     };
   }, []);
+
+  // ── Apply scroll correction after zoom DOM update ──
+  React.useLayoutEffect(() => {
+    if (zoomPointRef.current && canvasContainerRef.current) {
+      const { cx, cy, oldZoom, scrollLeft, scrollTop } = zoomPointRef.current;
+      const el = canvasContainerRef.current;
+      const scaleRatio = zoom / oldZoom;
+      
+      el.scrollLeft = (cx + scrollLeft) * scaleRatio - cx;
+      el.scrollTop = (cy + scrollTop) * scaleRatio - cy;
+      
+      zoomPointRef.current = null;
+    }
+  }, [zoom]);
 
   const stallNumbers = useMemo(() => {
     const nums: Record<string, number> = {};
