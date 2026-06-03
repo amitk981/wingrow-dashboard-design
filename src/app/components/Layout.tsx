@@ -7,6 +7,7 @@ import {
 import { useAppContext } from '../context/AppContext';
 import { USERS } from '../data/mockData';
 import { AppModule } from '../types';
+import { useAttendance, AttendanceWidget, AttendanceModal } from './AttendanceClock';
 
 const NAV_ITEMS: { label: string; path: string; icon: React.ElementType; module: AppModule | null }[] = [
   { label: 'Dashboard', path: '/', icon: LayoutDashboard, module: null },
@@ -92,6 +93,9 @@ export function Layout() {
   const { currentUser, setCurrentUser } = useAppContext();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [attendanceOpen, setAttendanceOpen] = useState(false);
+  const attendance = useAttendance(currentUser.id);
+  const uColor = userColor(currentUser.id);
 
   const currentPage = NAV_ITEMS.find(item =>
     item.path === '/'
@@ -152,7 +156,7 @@ export function Layout() {
             </div>
 
             {/* Bottom */}
-            <div className="px-4 pb-6 border-t border-gray-100 pt-4 space-y-4">
+            <div className="px-4 pb-6 border-t border-gray-100 pt-4 space-y-3">
               <button className="w-full flex items-center justify-center gap-2 text-rose-500 text-xs font-medium border border-rose-200 rounded-xl py-2.5 hover:bg-rose-50 transition-colors">
                 <Download size={13} />
                 Install Flamingo
@@ -172,16 +176,16 @@ export function Layout() {
                   ))}
                 </select>
               </div>
-              <div className="flex items-center gap-2.5">
-                <div className={`w-9 h-9 ${userColor(currentUser.id)} rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
-                  {currentUser.initials}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-800 truncate">{currentUser.name}</p>
-                  <p className="text-[11px] text-gray-400 truncate">{currentUser.organization}</p>
-                </div>
-                <LogOut size={14} className="text-gray-300 flex-shrink-0" />
-              </div>
+              <AttendanceWidget
+                userName={currentUser.name}
+                userInitials={currentUser.initials}
+                userColor={uColor}
+                record={attendance.record}
+                isActive={attendance.isActive}
+                isDone={attendance.isDone}
+                collapsed={false}
+                onOpen={() => { setMobileOpen(false); setAttendanceOpen(true); }}
+              />
             </div>
           </div>
         </div>
@@ -218,7 +222,7 @@ export function Layout() {
 
           {/* Bottom — expanded */}
           {!collapsed && (
-            <div className="px-4 pb-5 border-t border-gray-100 pt-4 space-y-4">
+            <div className="px-4 pb-5 border-t border-gray-100 pt-4 space-y-3">
               <button className="w-full flex items-center justify-center gap-2 text-rose-500 text-xs font-medium border border-rose-200 rounded-xl py-2.5 hover:bg-rose-50 transition-colors">
                 <Download size={13} />
                 Install Flamingo
@@ -235,27 +239,32 @@ export function Layout() {
                   ))}
                 </select>
               </div>
-              <div className="flex items-center gap-2.5">
-                <div className={`w-9 h-9 ${userColor(currentUser.id)} rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
-                  {currentUser.initials}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-800 truncate">{currentUser.name}</p>
-                  <p className="text-[11px] text-gray-400 truncate">{currentUser.organization}</p>
-                </div>
-                <button className="text-gray-300 hover:text-gray-500 transition-colors flex-shrink-0">
-                  <LogOut size={14} />
-                </button>
-              </div>
+              <AttendanceWidget
+                userName={currentUser.name}
+                userInitials={currentUser.initials}
+                userColor={uColor}
+                record={attendance.record}
+                isActive={attendance.isActive}
+                isDone={attendance.isDone}
+                collapsed={false}
+                onOpen={() => setAttendanceOpen(true)}
+              />
             </div>
           )}
 
           {/* Bottom — collapsed */}
           {collapsed && (
             <div className="pb-4 pt-3 border-t border-gray-100 flex flex-col items-center">
-              <div className={`w-8 h-8 ${userColor(currentUser.id)} rounded-full flex items-center justify-center text-white text-[10px] font-bold`}>
-                {currentUser.initials}
-              </div>
+              <AttendanceWidget
+                userName={currentUser.name}
+                userInitials={currentUser.initials}
+                userColor={uColor}
+                record={attendance.record}
+                isActive={attendance.isActive}
+                isDone={attendance.isDone}
+                collapsed={true}
+                onOpen={() => setAttendanceOpen(true)}
+              />
             </div>
           )}
         </aside>
@@ -273,6 +282,22 @@ export function Layout() {
       <main className="flex-1 overflow-y-auto bg-gray-50 pt-14 md:pt-0">
         <Outlet />
       </main>
+
+      {/* ── Attendance modal ── */}
+      {attendanceOpen && (
+        <AttendanceModal
+          userId={currentUser.id}
+          userName={currentUser.name}
+          userInitials={currentUser.initials}
+          userColor={uColor}
+          record={attendance.record}
+          isActive={attendance.isActive}
+          isDone={attendance.isDone}
+          onClockIn={attendance.clockIn}
+          onClockOut={attendance.clockOut}
+          onClose={() => setAttendanceOpen(false)}
+        />
+      )}
     </div>
   );
 }
