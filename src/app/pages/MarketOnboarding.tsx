@@ -187,7 +187,7 @@ export function MarketOnboarding() {
                           {h}
                           <Info size={14} className="text-gray-400 group-hover:text-blue-500 transition-colors cursor-help" />
                           <div className="absolute top-[130%] left-1/2 -translate-x-1/2 px-3 py-2 bg-[#1e293b] text-white text-[11px] normal-case tracking-normal rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-xl">
-                            Rent is calculated as base rent * number of days * number of outlets
+                            Total rent is the sum of all individual stall rents.
                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-[#1e293b]" />
                           </div>
                         </div>
