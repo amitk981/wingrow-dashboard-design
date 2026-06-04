@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { X, Check, ChevronRight, ArrowRight, ArrowLeft, Plus, Trash2, Info, Bold, Italic, Underline, List, ListOrdered, Link, RemoveFormatting, Maximize2, Minimize2 } from 'lucide-react';
-import { MarketLayoutDesigner } from './MarketLayoutDesigner';
+import { MarketLayoutDesigner, STALL_CATEGORIES } from './MarketLayoutDesigner';
 import { Finalization } from '../types';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -12,6 +12,7 @@ interface OnboardingData {
   bookingMethod: 'Fixed Rent' | 'Subscription';
   rentAmount: string;
   rentUnit: 'Per Stall' | 'Per Sqft';
+  stallRents: Record<string, string>;
   offersText: string;
   additionalCosts: AdditionalCost[];
 }
@@ -135,6 +136,25 @@ function StepLayout({ data, onChange, isFullScreen, onToggleFullScreen }: {
 // ─── Step 2: Outlet Config ─────────────────────────────────────────────────────
 
 function StepOutletConfig({ data, onChange }: { data: OnboardingData; onChange: (d: Partial<OnboardingData>) => void }) {
+  // Extract stalls from grid and compute stall numbers in row-major order
+  const stalls = React.useMemo(() => {
+    const entries: { key: string; r: number; c: number; catId: string }[] = [];
+    Object.entries(data.grid).forEach(([key, el]) => {
+      if (el?.type === 'stall' && el.catId) {
+        const [r, c] = key.split('-').map(Number);
+        entries.push({ key, r, c, catId: el.catId });
+      }
+    });
+    entries.sort((a, b) => a.r !== b.r ? a.r - b.r : a.c - b.c);
+    return entries.map((e, i) => ({ ...e, stallNo: i + 1 }));
+  }, [data.grid]);
+
+  const getCat = (id: string) => STALL_CATEGORIES.find(c => c.id === id);
+
+  const updateStallRent = (key: string, value: string) => {
+    onChange({ stallRents: { ...data.stallRents, [key]: value } });
+  };
+
   return (
     <div className="p-4 space-y-4">
       {/* Section header */}
@@ -161,41 +181,61 @@ function StepOutletConfig({ data, onChange }: { data: OnboardingData; onChange: 
 
       {/* Rent Details section header */}
       <div className="pl-3 border-l-4 border-rose-500">
-        <p className="text-xs font-bold text-gray-800 uppercase tracking-widest">Rent Details</p>
-      </div>
-
-      {/* Rent Details card */}
-      <div className="border border-gray-200 rounded-2xl p-4 bg-white">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wider block">
-              Rent Amount (₹) / Per Week <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="number"
-              value={data.rentAmount}
-              onChange={e => onChange({ rentAmount: e.target.value })}
-              placeholder="0"
-              className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-rose-400 transition-colors bg-gray-50"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wider block">
-              Rent Unit <span className="text-rose-500">*</span>
-            </label>
-            <div className="relative">
-              <select
-                value={data.rentUnit}
-                onChange={e => onChange({ rentUnit: e.target.value as any })}
-                className="w-full appearance-none border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-rose-400 transition-colors bg-gray-50 pr-8">
-                <option value="Per Stall">Per Stall</option>
-                <option value="Per Sqft">Per Sqft</option>
-              </select>
-              <ChevronRight size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 rotate-90 text-gray-400 pointer-events-none" />
-            </div>
-          </div>
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-bold text-gray-800 uppercase tracking-widest">Rent Details</p>
+          <span className="text-[10px] font-semibold text-gray-400">{stalls.length} stalls</span>
         </div>
       </div>
+
+      {/* Per-stall rent list */}
+      {stalls.length > 0 ? (
+        <div className="border border-gray-200 rounded-2xl bg-white overflow-hidden">
+          {/* Table header */}
+          <div className="grid grid-cols-[44px_1fr_120px] items-center px-4 py-2.5 bg-gray-50 border-b border-gray-100">
+            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">#</span>
+            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Outlet Type</span>
+            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Rent (₹/wk)</span>
+          </div>
+
+          {/* Stall rows */}
+          <div className="divide-y divide-gray-100">
+            {stalls.map(stall => {
+              const cat = getCat(stall.catId);
+              return (
+                <div key={stall.key} className="grid grid-cols-[44px_1fr_120px] items-center px-4 py-2.5 hover:bg-gray-50/50 transition-colors">
+                  {/* Stall number */}
+                  <span className="text-xs font-bold text-gray-700">{stall.stallNo}</span>
+
+                  {/* Outlet type with color dot */}
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: cat?.color ?? '#9e9e9e' }}
+                    />
+                    <span className="text-xs font-semibold text-gray-700">{cat?.label ?? 'Unknown'}</span>
+                  </div>
+
+                  {/* Rent input */}
+                  <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50 focus-within:border-rose-400 transition-colors">
+                    <span className="px-2 py-2 text-[10px] text-gray-400 border-r border-gray-200 bg-white font-semibold">₹</span>
+                    <input
+                      type="number"
+                      value={data.stallRents[stall.key] ?? ''}
+                      onChange={e => updateStallRent(stall.key, e.target.value)}
+                      placeholder="0"
+                      className="flex-1 px-2 py-2 text-xs focus:outline-none w-0 bg-gray-50"
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="border border-dashed border-gray-300 rounded-2xl p-6 text-center">
+          <p className="text-xs text-gray-400">No stalls painted yet. Go back to the Layout step to add stalls.</p>
+        </div>
+      )}
 
       {/* Configuration Tip */}
       <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex items-start gap-3">
@@ -205,7 +245,7 @@ function StepOutletConfig({ data, onChange }: { data: OnboardingData; onChange: 
         <div>
           <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mb-1">Configuration Tip</p>
           <p className="text-xs text-gray-600 leading-relaxed">
-            Stall configurations set here will be the default for this market. You can override individual stall prices later in the layout designer.
+            Each stall's rent can be set individually. Leave a field blank to use the default market rate.
           </p>
         </div>
       </div>
@@ -364,7 +404,7 @@ function StepAdditionalCosts({ data, onChange }: { data: OnboardingData; onChang
 // ─── Main Drawer ───────────────────────────────────────────────────────────────
 
 const DEFAULT_DATA: OnboardingData = {
-  grid: {}, bookingMethod: 'Fixed Rent', rentAmount: '', rentUnit: 'Per Stall', offersText: '', additionalCosts: [],
+  grid: {}, bookingMethod: 'Fixed Rent', rentAmount: '', rentUnit: 'Per Stall', stallRents: {}, offersText: '', additionalCosts: [],
 };
 
 export function OnboardingDrawer({ finalization, onClose, onSubmit }: OnboardingDrawerProps) {
@@ -385,7 +425,7 @@ export function OnboardingDrawer({ finalization, onClose, onSubmit }: Onboarding
 
   const canProceed = () => {
     if (step === 1) return Object.values(data.grid).some((el: any) => el?.type === 'stall');
-    if (step === 2) return !!data.rentAmount;
+    if (step === 2) return Object.values(data.stallRents).some(v => !!v);
     return true;
   };
 
