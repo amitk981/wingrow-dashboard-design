@@ -183,9 +183,13 @@ export function MarketOnboarding() {
                   ].map(h => (
                     <th key={h} className={`px-4 py-3 text-[10px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap ${['Status', 'Primary Actions'].includes(h) ? 'text-center' : 'text-left'}`}>
                       {h === 'Rent Details (Per Week)' ? (
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 relative group">
                           {h}
-                          <Info size={14} className="text-blue-500" />
+                          <Info size={14} className="text-blue-500 cursor-help" />
+                          <div className="absolute bottom-[130%] left-1/2 -translate-x-1/2 px-3 py-2 bg-[#1e293b] text-white text-[11px] normal-case tracking-normal rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-xl">
+                            Rent is calculated as base rent * number of days * number of outlets
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#1e293b]" />
+                          </div>
                         </div>
                       ) : h}
                     </th>
