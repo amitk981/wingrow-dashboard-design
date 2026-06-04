@@ -10,7 +10,7 @@ const TODAY = new Date('2026-05-18');
 const STATUS_STYLE: Record<OnboardingStatus, string> = {
   'Pending':     'bg-amber-50 text-amber-700 border border-amber-200',
   'In Progress': 'bg-blue-50 text-blue-600 border border-blue-200',
-  'Approved':    'bg-green-50 text-green-600 border border-green-200',
+  'Approved':    'bg-[#d1fae5] text-[#047857] border border-[#6ee7b7]',
   'Rejected':    'bg-red-50 text-red-600 border border-red-200',
 };
 
@@ -177,9 +177,16 @@ export function MarketOnboarding() {
                   {[
                     'Market ID', 'Pin Code', 'Market Name & Address', 'Category', 'Households',
                     'Ownership Type', 'Docs', 'Day / Time', 'Number of Outlets',
-                    'Manager', 'Booking Method', 'Rent Details (Per Week) ⓘ', 'Status',
+                    'Manager', 'Booking Method', 'Rent Details (Per Week)', 'Status', 'Primary Actions'
                   ].map(h => (
-                    <th key={h} className={`px-4 py-3 text-[10px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap ${h === 'Status' ? 'text-center' : 'text-left'}`}>{h}</th>
+                    <th key={h} className={`px-4 py-3 text-[10px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap ${['Status', 'Primary Actions'].includes(h) ? 'text-center' : 'text-left'}`}>
+                      {h === 'Rent Details (Per Week)' ? (
+                        <div className="flex items-center gap-1.5">
+                          {h}
+                          <Info size={14} className="text-blue-500" />
+                        </div>
+                      ) : h}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -228,17 +235,28 @@ export function MarketOnboarding() {
                       {/* Rent Details */}
                       <td className="px-4 py-3 whitespace-nowrap">
                         <p className="text-sm font-bold text-gray-800">{formatRent(o.rentPerOutletPerWeek)}</p>
-                        <p className="text-[10px] text-gray-400">₹ 33 / Week / Outlet</p>
+                        <p className="text-[11px] text-[#94a3b8] mt-0.5">₹ 33 / Week / Outlet</p>
                       </td>
                       {/* Status */}
                       <td className="px-4 py-3">
                         <div className="flex flex-col items-center justify-center gap-1.5 text-center mx-auto">
-                          <span className={`inline-block w-[100px] text-[10px] font-bold py-1 rounded-full whitespace-nowrap tracking-wide ${STATUS_STYLE[o.status]}`}>
+                          <span className={`inline-block w-[110px] text-[10px] font-bold py-1.5 rounded-full whitespace-nowrap tracking-wider ${STATUS_STYLE[o.status]}`}>
                             {o.status.toUpperCase()}
                           </span>
-                          <span className="text-[10px] text-gray-400 whitespace-nowrap font-medium">
+                          <span className="text-[10px] text-[#94a3b8] whitespace-nowrap font-medium">
                             {format(o.updatedAt, 'MMM d, yyyy, h:mm a')}
                           </span>
+                        </div>
+                      </td>
+                      {/* Primary Actions */}
+                      <td className="px-4 py-3 whitespace-nowrap text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <button className="px-5 py-2 text-[10px] font-bold text-[#94a3b8] border border-[#e2e8f0] rounded-[10px] uppercase tracking-widest hover:bg-slate-50 transition-colors">
+                            Approve
+                          </button>
+                          <button className="px-5 py-2 text-[10px] font-bold text-[#94a3b8] border border-[#e2e8f0] rounded-[10px] uppercase tracking-widest hover:bg-slate-50 transition-colors">
+                            Reject
+                          </button>
                         </div>
                       </td>
                     </tr>
