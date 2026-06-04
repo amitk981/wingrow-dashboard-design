@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router';
 import {
-  LayoutDashboard, CheckSquare,
+  LayoutDashboard, CheckSquare, Store,
   Download, LogOut, ChevronLeft, ChevronRight, Menu, X, Receipt,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
@@ -12,6 +12,7 @@ import { useAttendance, AttendanceWidget, AttendanceModal } from './AttendanceCl
 const NAV_ITEMS: { label: string; path: string; icon: React.ElementType; module: AppModule | null }[] = [
   { label: 'Dashboard', path: '/', icon: LayoutDashboard, module: null },
   { label: 'Location Finalization', path: '/location-finalization', icon: CheckSquare, module: 'Location Finalization' },
+  { label: 'Market Onboarding', path: '/market-onboarding', icon: Store, module: 'Market Onboarding' },
   // { label: 'Farmer Billing', path: '/farmer-billing', icon: Receipt, module: 'Farmer Billing' },
 ];
 
