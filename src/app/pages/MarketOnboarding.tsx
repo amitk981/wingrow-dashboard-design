@@ -153,7 +153,9 @@ export function MarketOnboarding() {
                   </div>
                   <p className="text-[22px] font-extrabold text-gray-900">
                     {formatRent(o.rentPerOutletPerWeek)}
-                    <span className="text-[11px] font-medium text-gray-400 ml-1">/ Week / Outlet</span>
+                    <span className="text-[11px] font-medium text-gray-400 ml-2">
+                      (Avg. ₹{o.numberOfOutlets ? Math.round(o.rentPerOutletPerWeek / o.numberOfOutlets).toLocaleString('en-IN') : 0}/wk)
+                    </span>
                   </p>
                 </div>
               </div>
@@ -235,7 +237,9 @@ export function MarketOnboarding() {
                       {/* Rent Details */}
                       <td className="px-4 py-3 whitespace-nowrap">
                         <p className="text-sm font-bold text-gray-800">{formatRent(o.rentPerOutletPerWeek)}</p>
-                        <p className="text-[11px] text-[#94a3b8] mt-0.5">₹ 33 / Week / Outlet</p>
+                        <p className="text-[11px] text-[#94a3b8] mt-0.5">
+                          Avg. ₹ {o.numberOfOutlets ? Math.round(o.rentPerOutletPerWeek / o.numberOfOutlets).toLocaleString('en-IN') : 0} / Wk / Outlet
+                        </p>
                       </td>
                       {/* Status */}
                       <td className="px-4 py-3">
