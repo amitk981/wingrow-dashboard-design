@@ -79,6 +79,7 @@ export function AttendanceModal({
 }: ModalProps) {
   const now = useLiveTime();
   const [confirmed, setConfirmed] = useState(false);
+  const [wasClockOut, setWasClockOut] = useState(false);
 
   const elapsed = isActive && record.clockIn
     ? differenceInSeconds(now, new Date(record.clockIn))
@@ -88,8 +89,10 @@ export function AttendanceModal({
 
   const handleAction = () => {
     if (isActive) {
+      setWasClockOut(true);
       onClockOut();
     } else {
+      setWasClockOut(false);
       onClockIn();
     }
     setConfirmed(true);
@@ -148,7 +151,7 @@ export function AttendanceModal({
             <div className="flex flex-col items-center gap-2 py-4">
               <CheckCircle size={44} className="text-emerald-500" />
               <p className="font-bold text-gray-800 text-lg">
-                {isActive ? 'See you later!' : 'You\'re clocked in!'}
+                {wasClockOut ? 'See you later!' : "You're clocked in!"}
               </p>
               <p className="text-xs text-gray-400">Attendance recorded</p>
             </div>
