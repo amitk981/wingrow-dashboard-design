@@ -117,7 +117,7 @@ export function MarketOnboarding() {
                     {o.id}
                   </span>
                   <span className={`text-[10px] font-bold px-3 py-1.5 rounded-full ${STATUS_STYLE[o.status]}`}>
-                    {o.status.toUpperCase()}
+                    {o.status === 'Pending' ? 'IN REVIEW' : o.status.toUpperCase()}
                   </span>
                 </div>
 
@@ -241,7 +241,7 @@ export function MarketOnboarding() {
                       <td className="px-4 py-3">
                         <div className="flex flex-col items-center justify-center gap-1.5 text-center mx-auto">
                           <span className={`inline-block w-[110px] text-[10px] font-bold py-1.5 rounded-full whitespace-nowrap tracking-wider ${STATUS_STYLE[o.status]}`}>
-                            {o.status.toUpperCase()}
+                            {o.status === 'Pending' ? 'IN REVIEW' : o.status.toUpperCase()}
                           </span>
                           <span className="text-[10px] text-[#94a3b8] whitespace-nowrap font-medium">
                             {format(o.updatedAt, 'MMM d, yyyy, h:mm a')}
