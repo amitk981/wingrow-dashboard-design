@@ -4,6 +4,7 @@ import { Store, Clock, Search, SlidersHorizontal, AlertTriangle, CheckCircle, In
 import { useAppContext } from '../context/AppContext';
 import { ONBOARDINGS, USERS } from '../data/mockData';
 import { Onboarding, OnboardingStatus } from '../types';
+import { MarketOnboardingDetails } from '../components/MarketOnboardingDetails';
 
 const TODAY = new Date('2026-05-18');
 
@@ -34,6 +35,7 @@ function Avatar({ id }: { id: string }) {
 export function MarketOnboarding() {
   const { currentUser, filters } = useAppContext();
   const [search, setSearch] = useState('');
+  const [selectedOnboarding, setSelectedOnboarding] = useState<Onboarding | null>(null);
 
   const filtered = useMemo(() => {
     const results = ONBOARDINGS.filter(o => {
@@ -110,7 +112,7 @@ export function MarketOnboarding() {
           {filtered.map(o => {
             const manager = userName(o.managerId);
             return (
-              <div key={o.id} className="bg-white rounded-[24px] border border-gray-100 shadow-sm p-4">
+              <div key={o.id} onClick={() => setSelectedOnboarding(o)} className="bg-white rounded-[24px] border border-gray-100 shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow active:scale-[0.99]">
                 {/* Top Badges */}
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-[10px] font-bold px-3 py-1.5 rounded-full border border-rose-200 text-rose-600 bg-rose-50">
@@ -200,7 +202,7 @@ export function MarketOnboarding() {
                 {filtered.map(o => {
                   const manager = userName(o.managerId);
                   return (
-                    <tr key={o.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={o.id} onClick={() => setSelectedOnboarding(o)} className="hover:bg-gray-50 transition-colors cursor-pointer">
                       {/* Market ID */}
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span className="text-[11px] font-bold px-2.5 py-1 rounded-lg border border-rose-200 text-rose-600 bg-rose-50">{o.id}</span>
@@ -291,6 +293,14 @@ export function MarketOnboarding() {
           </div>
         </div>
       </div>
+
+      {/* Market Details Drawer */}
+      {selectedOnboarding && (
+        <MarketOnboardingDetails
+          onboarding={selectedOnboarding}
+          onClose={() => setSelectedOnboarding(null)}
+        />
+      )}
     </div>
   );
 }

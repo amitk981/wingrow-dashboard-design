@@ -95,6 +95,14 @@ export interface Finalization {
   pendingApprovalId?: string;
 }
 
+export interface LayoutElement {
+  type: 'stall' | 'road' | 'pathway' | 'entry' | 'parking' | 'blocked' | 'misc';
+  catId?: string;
+  facing: 'N' | 'E' | 'S' | 'W';
+}
+
+export type LayoutGrid = Record<string, LayoutElement>;
+
 export interface Onboarding {
   id: string;              // WIN-XXX
   finalizationId?: string;
@@ -117,6 +125,11 @@ export interface Onboarding {
   createdAt: Date;
   updatedAt: Date;
   pendingApprovalId?: string;
+  // Layout configuration
+  layoutGrid?: LayoutGrid;
+  layoutRows?: number;
+  layoutCols?: number;
+  stallRents?: Record<string, number>; // cellKey -> rent per week
 }
 
 export interface Approval {
